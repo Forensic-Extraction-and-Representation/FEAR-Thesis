@@ -1,0 +1,53 @@
+﻿@page "{investigationId:Guid}"
+@model FEAR.Hosted.Pages.Cases.QueriesModel
+@{
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Query</th>
+            <th>Created By</th>
+            <th>Created On</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var q in Model.Queries)
+        {
+                <tr>
+                    <td>@q.Name</td>
+                    <td>@q.Description</td>
+                    <td>
+                        <pre><code class="language-sparql">@q.QueryText</code></pre>
+                    </td>
+                    <td>@q.CreatedByUserId</td>
+                    <td>@q.CreatedOn.ToString("g")</td>
+                </tr>
+        }
+    </tbody>
+</table>
+
+<hr />
+
+<h4>Add New Query</h4>
+
+<form method="post">
+    <div class="mb-3">
+        <label asp-for="NewQuery.Name" class="form-label">Name</label>
+        <input asp-for="NewQuery.Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="NewQuery.Description" class="form-label">Description</label>
+        <textarea asp-for="NewQuery.Description" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="mb-3">
+        <label asp-for="NewQuery.QueryText" class="form-label">SPARQL Query</label>
+        <textarea asp-for="NewQuery.QueryText" class="form-control" rows="6"></textarea>
+    </div>
+    <input type="hidden" asp-for="NewQuery.InvestigationId" value="@Model.InvestigationId" />
+    <button type="submit" class="btn btn-primary">Add Query</button>
+</form>

@@ -1,0 +1,159 @@
+﻿@using FEAR.Admin.Services.Management
+@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Model.InvestigationStore
+@using System.Text.Json;
+@using FEAR.Blazor.Shared.Components;
+@using FEAR.Host.Domain.Api.Management.Security
+@using MudBlazor
+@if (Investigation != null)
+{
+    <MudPaper Class="ma-4" Elevation="0" Style="background-color: var(--mud-palette-background-default);">
+    
+        <MudItem xs="12" Class="py-2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddInvestigationUser">Add User</MudButton>
+            </MudStack>
+            @if (InvestigationUsers != null)
+            {
+                <MudTable Items="InvestigationUsers" Dense="true" Hover="true" Class="mt-2" Context="ctx">
+                    <HeaderContent>
+                        <MudTh>User</MudTh>
+                        <MudTh>Role</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="User">@ctx.UserName</MudTd>
+                        <MudTd DataLabel="Roles">@ctx.RoleName</MudTd>
+                        <MudTd>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => EditInvestigationUser(ctx)">Assign</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => RemoveInvestigationUser(ctx)">Remove</MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText Class="my-4">No individual user assignments to this investigation.</MudText>
+                    </NoRecordsContent>
+                </MudTable>
+            }
+            else
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        <MudText>Loading investigation users...</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudItem>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public InvestigationInfo Investigation { get; set; }
+
+    [Inject] InvestigationService InvestigationService { get; set; }
+    [Inject] UserService UserService { get; set; }
+    [Inject] RoleService RoleService { get; set; }
+    [Inject] IDialogService DialogService { get; set; }
+
+    public DialogOptions DialogOptions = new DialogOptions()
+    {
+        MaxWidth = MaxWidth.Large,
+        FullWidth = true,
+        CloseButton = true,
+        BackdropClick = false
+    };
+
+    private List<QueryInvestigationUserRoles.InvestigationUserRoles> InvestigationUsers = null;
+    private List<FEAR.Domain.Model.Authentication.User> allUsers = new();
+    private List<FEAR.Domain.Model.Authentication.Role> allRoles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadInvestigationUsers();
+        await LoadUsersAndRoles();
+    }
+
+    private async Task LoadInvestigationUsers()
+    {
+        InvestigationUsers = null;
+        if (Investigation.InvestigationId != Guid.Empty)
+        {
+            var resp = await UserService.QueryInvestigationUsersAsync(new QueryInvestigationUserRoles.Request { InvestigationId = Investigation.InvestigationId });
+            InvestigationUsers = resp.Results.ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUsersAndRoles()
+    {
+        // This probably needs to be retrieved from the server in real-time.
+        // But for now, just load them once.
+        var usersResp = await UserService.QueryUsersAsync(new FEAR.Host.Domain.Api.Management.Security.QueryUsersRequest());
+        allUsers = usersResp.Results.ToList();
+        var rolesResp = await RoleService.QueryRolesAsync(new QueryRoles.Request());
+        allRoles = rolesResp.Results.ToList();
+    }
+
+    private void OpenAddInvestigationUser()
+    {
+        EditInvestigationUser(new QueryInvestigationUserRoles.InvestigationUserRoles());
+    }
+
+    private async Task EditInvestigationUser(QueryInvestigationUserRoles.InvestigationUserRoles row)
+    {
+        var model = new EditIndividualUserDialog.InvestigationUserEditorModel
+        {
+            UserId = row.UserId,
+            UserName = row.UserName,
+            User = allUsers.FirstOrDefault(u => u.UserId == row.UserId),
+            RoleId = row.RoleId
+        };
+        
+        var parameters = new DialogParameters
+            {
+                { "Model", model},
+                { "AllUsers", allUsers},
+                { "AllRoles", allRoles}
+            };
+
+        var dialogResult = await DialogService.ShowAsync<EditIndividualUserDialog>("Edit User", parameters, DialogOptions);
+
+        if (dialogResult.Result.IsCanceled)
+            return;
+        else
+        {
+            var resultModel = await dialogResult.GetReturnValueAsync<EditIndividualUserDialog.InvestigationUserEditorModel>();
+            if (resultModel != null)
+            {
+                await SaveInvestigationUser(resultModel);
+            }
+        }
+    }
+
+    private async Task RemoveInvestigationUser(QueryInvestigationUserRoles.InvestigationUserRoles row)
+    {
+        await UserService.RevokeInvestigationRolesAsync(new RevokeInvestigationRoles.Request
+        {
+            UserId = row.UserId,
+            InvestigationId = Investigation.InvestigationId
+        });
+        await LoadInvestigationUsers();
+    }
+
+    private async Task SaveInvestigationUser(EditIndividualUserDialog.InvestigationUserEditorModel model)
+    {
+        var userId = model.User?.UserId ?? model.UserId;
+        if (userId == Guid.Empty)
+            return;
+        await UserService.AssignInvestigationRolesAsync(new AssignInvestigationRoles.Request
+        {
+            UserId = userId,
+            InvestigationId = Investigation.InvestigationId,
+            RoleId = model.RoleId
+        });
+        await LoadInvestigationUsers();
+    }
+}

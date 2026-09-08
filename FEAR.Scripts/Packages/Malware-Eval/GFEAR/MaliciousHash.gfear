@@ -1,0 +1,14 @@
+define codifier("VT_MALICIOUS_HASH", "DFIO/VirusTotal/MaliciousHash");
+ontology("https://ontology.fear.graph/virustotal", "vt");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Md5, Source, ThreatType, Description, Malicious);
+
+result MaliciousHash as vt:MaliciousHash with {
+	create property vt:md5 as xsd:hexBinary with Md5;
+	create property vt:source as xsd:string with Source;
+	create property vt:threatType as xsd:string with ThreatType;
+	create property vt:description as xsd:string with Description;
+	create property vt:malicious as xsd:string with Malicious;
+} identified by required vt:source, required vt:md5;

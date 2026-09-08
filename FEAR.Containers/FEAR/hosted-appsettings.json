@@ -1,0 +1,70 @@
+{
+  "DetailedErrors": true,
+  "https_port": 8009,
+  "DatabaseConfigurationOptions": {
+    "TypeHandlerName": "FEAR.Host.Core.Database.PostgresDBDatabaseProvider, FEAR.Host.Core",
+    "ReloadSeedData": false
+  },
+  "ConnectionStrings": {
+    "HostedSystemConnection": "<Replaced>",
+    "InvestigationConnection": "<Replaced>",
+    "IdentityConnection": "<Replaced>",
+    "OpenIdConnection": "<Replaced>",
+    "InvestigationConfigurationConnection": "ConnectionString=InvestigationConnection; Provider=FEAR.Host.Core.Investigation.Configuration.DatabaseInvestigationConfigurationProvider"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Jwt": {
+    "Issuer": "https://Autopsy.FEAR/",
+    "Audience": "https://Autopsy.FEAR/",
+    "ExpirationTimeInMinutes": 60,
+    "TokenType": "Bearer",
+    "Key": "<Replaced>",
+    "EncKey": "<Replaced>"
+  },
+  "ServiceHost": {
+    "Http": 8008,
+    "HttpsEnabled": true,
+    "HttpsCertificate": "/etc/ssl/certs/api.fear.app.crt",
+    "HttpsCertificateKey": "/etc/ssl/private/api.fear.app.key"
+  },
+  "ChatInference": {
+    "SigningKey": "<Replaced>"
+  },
+  "Telemetry": {
+    "Destinations": {
+      "LogFile": {
+        "DefaultSettings": "LogDirectory=/opt/fear/logs; RetainDays=30; CreateDateFolder=true; LogToConsole=true"
+      }
+    }
+  },
+  "Authentication": {
+    "EncryptionKeyName": "<Replaced>"
+  },
+  "Initialization": {
+    "Enabled": true,
+    "SetupEnabled": false,
+    "KeyConfigurationFile": "keyconfig.json",
+    "AutoDecryptSet": [
+      {
+        "KeyName": "<Replaced>",
+        "Values": {
+          "PrimaryKey": "<Replaced>",
+          "SecondaryKey": "<Replaced>"
+        }
+      }
+    ]
+  },
+  "SecurityManagement": {
+    "Enabled": true
+  },
+  "SystemDefaults": {
+    "CaseBaseDirectory": "/opt/fear/lib/cases/"
+  }
+}
+

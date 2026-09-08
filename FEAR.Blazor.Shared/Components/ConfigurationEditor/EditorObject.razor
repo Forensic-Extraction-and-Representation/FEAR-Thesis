@@ -1,0 +1,50 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using MudBlazor
+
+<MudItem xs="12">
+    <MudStack Spacing="2">
+        <MudGrid Spacing="2">
+            <MudItem xs="1">
+                <MudText Typo="Typo.subtitle1">
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="OnExpandCollapseClick">
+                        <MudIcon Icon="@(_expanded? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" />
+                    </MudButton>
+                </MudText>
+            </MudItem>
+            <MudItem xs="11">
+                <MudText Typo="Typo.subtitle1">@Field.DisplayName</MudText>
+                <MudText Typo="Typo.subtitle2" Class="mb-2">@Field.Description</MudText>
+            </MudItem>
+
+            <MudItem xs="1"></MudItem>
+            <MudItem xs="11">
+                <MudCollapse Expanded="_expanded">
+                    @if (Field.Fields != null && Field.Fields.Any())
+                    {
+                        <EditorFieldList ValueStore="ValueStore" PropertyPath="@PropertyPath" Fields="Field.Fields" />
+                    }
+
+                    @if (Field.IsFreeFieldsAllowed)
+                    {
+                        @*Need to find all the fields that are in the entry, but don't have a definition*@
+                    }
+                    <MudItem xs="1"></MudItem>
+                    <MudItem xs="11">&nbsp;</MudItem>
+                </MudCollapse>
+            </MudItem>
+        </MudGrid>
+    </MudStack>
+</MudItem>
+
+@code {
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+    [Parameter] public FormField Field { get; set; }
+    [Parameter] public string PropertyPath { get; set; } = "";
+
+    bool _expanded = false;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
+}

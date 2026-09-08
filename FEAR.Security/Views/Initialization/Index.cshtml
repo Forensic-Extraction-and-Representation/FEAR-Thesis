@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNetCore.Mvc;
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center">Key Submission</h2>
+                @using (Html.BeginForm("SubmitKey", "Initialization", FormMethod.Post))
+                {
+                    <div class="form-group">
+                        <label for="keyGroupIdentifier">Key Group Identifier</label>
+                        <input type="text" name="keyGroupIdentifier" class="form-control" id="keyGroupIdentifier" placeholder="Enter Key Group Identifier">
+                    </div>
+                    <div class="form-group">
+                        <label for="keyName">Key Name</label>
+                        <input type="text" name="keyName" class="form-control" id="keyName" placeholder="Enter Key Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="keyIdentifier">Key Identifier</label>
+                        <input type="text" name="keyIdentifier" class="form-control" id="keyIdentifier" placeholder="Enter Key Identifier">
+                    </div>
+                    <div class="form-group">
+                        <label for="keyValue">Key Value</label>
+                        <input type="password" name="keyValue" class="form-control" id="keyValue" placeholder="Enter Key Value">
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-block">Submit</button>
+                }
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

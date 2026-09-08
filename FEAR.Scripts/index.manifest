@@ -1,0 +1,8 @@
+{
+  "GFEAR": {
+    "Autopsy": "/GFEAR/Autopsy/Autopsy.manifest"
+  },
+  "RFEAR": {
+    "Autopsy": "/RFEAR/Autopsy/Autopsy.manifest"
+  }
+}

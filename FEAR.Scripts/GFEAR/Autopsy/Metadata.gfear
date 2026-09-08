@@ -1,0 +1,23 @@
+﻿define codifier("TSK_METADATA", "DFIO/Autopsy/Metadata");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, SourceFileMd5, Owner, UserID, ModifiedDateTime, ProgramName, CreatedDateTime);
+
+result Metadata as aut:Metadata with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:owner as xsd:string with Owner;
+	create property aut:userID as xsd:string with UserID;
+	create property aut:modifiedDateTime as xsd:dateTime with ModifiedDateTime;
+	create property aut:createdDateTime as xsd:dateTime with CreatedDateTime;
+	create property aut:programName as xsd:string with ProgramName;
+	create property aut:sourceFileMd5 as xsd:hexBinary with SourceFileMd5;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:hexBinary with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:sourceFile, required aut:sourceFileMd5, required entity aut:sourceHost suspectHost;

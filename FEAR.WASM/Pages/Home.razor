@@ -1,0 +1,84 @@
+﻿@page "/"
+@using MudBlazor
+
+<PageTitle>Forensic Extract and Representation (FEAR)</PageTitle>
+
+<div class="hero-container">
+    <div class="hero-content mud-elevation-10">
+        <img class="hero-logo" src="images/FEAR-Logo.png" alt="FEAR Logo" />
+        <MudText Typo="Typo.h3" Align="Align.Center" Class="hero-title">
+            Forensic Extract and Representation (FEAR)
+        </MudText>
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="hero-subtitle fade-1">
+            Unified graph-driven investigation for digital evidence.
+        </MudText>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="hero-subtext fade-2">
+            Automate ingestion, correlation, and neuro-symbolic AI with GFEAR/RFEAR pipelines.
+        </MudText>
+        <MudText Typo="Typo.subtitle2" Align="Align.Center" Class="hero-subtext fade-3">
+            Collaborate, visualize, and act with confidence&mdash;powered by FEAR.
+        </MudText>
+    </div>
+</div>
+
+<style>
+    .hero-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 20% 20%, rgba(63, 81, 181, 0.12), transparent 40%),
+                    radial-gradient(circle at 80% 0%, rgba(0, 150, 136, 0.12), transparent 35%),
+                    linear-gradient(135deg, #0b1021 0%, #0f162e 50%, #0b1021 100%);
+        padding: 32px;
+    }
+
+    .hero-content {
+        max-width: 800px;
+        width: 100%;
+        background: rgba(18, 22, 38, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 32px 40px;
+        text-align: center;
+        color: #e6e8f0;
+    }
+
+    .hero-logo {
+        width: 160px;
+        max-width: 40vw;
+        margin: 0 auto 24px auto;
+        display: block;
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+    }
+
+    .hero-title {
+        color: #ffffff;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .hero-subtitle {
+        color: #bcd2ff;
+        margin-bottom: 10px;
+    }
+
+    .hero-subtext {
+        color: #c6cedd;
+        margin-bottom: 6px;
+    }
+
+    /* Fade-in/out sequencing */
+    @@keyframes fadeCycle {
+        0%   { opacity: 0; transform: translateY(6px); }
+        10%  { opacity: 1; transform: translateY(0); }
+        70%  { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-4px); }
+    }
+
+    .fade-1 { animation: fadeCycle 12s ease-in-out infinite; animation-delay: 0s; }
+    .fade-2 { animation: fadeCycle 12s ease-in-out infinite; animation-delay: 2s; }
+    .fade-3 { animation: fadeCycle 12s ease-in-out infinite; animation-delay: 4s; }
+</style>
+
+

@@ -1,0 +1,7 @@
+{
+"Ontology": "https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#",
+"Version": "1.0.0",
+"Files":[
+  "Autopsy.rfear"
+]
+}

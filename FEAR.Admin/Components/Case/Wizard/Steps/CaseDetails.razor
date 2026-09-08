@@ -1,0 +1,44 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using FEAR.Domain.Model.InvestigationStore
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Case Details", Icons.Material.Filled.Start)]
+
+<MudText Typo="Typo.h5" Class="mb-4">Case Details</MudText>
+
+<MudText Class="mb-4">
+    Basic case details:
+</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudTextField @bind-Value="Model.InvestigationInfo.Name"
+                  Label="Case Name"
+                  Required="true"
+                  Validation="@(() => string.IsNullOrEmpty(Model.InvestigationInfo.Name) ? "Case Name is required" : null)"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true" />
+
+    <MudTextField @bind-Value="Model.InvestigationInfo.CaseNumber"
+                  Label="Case Number"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true" />
+
+    <MudTextField @bind-Value="Model.InvestigationInfo.CaseType"
+                  Label="Case Type"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true" />
+
+    <MudTextField @bind-Value="Model.InvestigationInfo.CaseStatus"
+                  Label="Case Status"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true" />
+</MudForm>
+
+@code {
+    protected bool IsEditing => Model != null && Model.InvestigationInfo.InvestigationId != Guid.Empty;
+}

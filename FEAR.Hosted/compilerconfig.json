@@ -1,0 +1,26 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/components/omnibar/chat-input.css",
+    "inputFile": "wwwroot/css/components/omnibar/chat-input.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/omnibar/omnibar.css",
+    "inputFile": "wwwroot/css/components/omnibar/omnibar.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/omnibar/query-input.css",
+    "inputFile": "wwwroot/css/components/omnibar/query-input.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/graph-window.css",
+    "inputFile": "wwwroot/css/components/graph-window.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/chat-window.css",
+    "inputFile": "wwwroot/css/chat-window.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/site.css",
+    "inputFile": "wwwroot/css/site.scss"
+  }
+]

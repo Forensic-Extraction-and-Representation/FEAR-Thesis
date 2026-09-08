@@ -1,0 +1,102 @@
+﻿@page "/Oidc/"
+@inherits FEAR.Blazor.Shared.Components.DataGridComponentBase<OpenIdApplicationModel>
+@using FEAR.Admin.Services.Management
+@using FEAR.Host.Domain.Api.Investigation
+@using MudBlazor
+@using FEAR.Host.Domain.Api.Administration
+@using static OpenIddict.Abstractions.OpenIddictConstants
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper>
+            <MudText Typo="Typo.h6">OIDC Applications</MudText>
+            <MudSpacer />
+            @if (Items != null)
+            {
+                <MudDataGrid T="OpenIdApplicationModel" MultiSelection=false Items="Items" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilters"
+                             Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+                    <ToolBarContent>
+                        <MudTooltip Text="Create OIDC App">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateOidcApp">Add</MudButton>
+                        </MudTooltip>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="OpenIdApplicationModel" />
+                        <PropertyColumn Property="x => x.DisplayName" Title="Display Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.ApplicationType" Title="Application Type" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.ClientId" Title="Client ID" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.ClientType" Title="Client Type" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.ConsentType" Title="Consent Type" Sortable="true" Filterable="true" />
+                        <TemplateColumn Title="Actions" T="OpenIdApplicationModel">
+                            <CellTemplate>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => EditOidcApp(context.Item)">Edit</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteOidcApp(context.Item)">Delete</MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="OpenIdApplicationModel" />
+                    </PagerContent>
+
+                </MudDataGrid>
+            }
+            else
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        <MudText>Loading investigations...</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="OpenIdApplicationModel" @ref="editorDialog" OnSave="SaveOidcApp" OnClose="LoadOidcApplications">
+    <HeaderTemplate Context="headerCtx">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((headerCtx.ClientId == null) ? "Create OIDC Application" : "Edit OIDC Application")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate>
+        <MudTextField @bind-Value="context.DisplayName" Label="Display Name" Required="true" For="@(() => context.DisplayName)" Immediate="true" />
+        <MudTextField @bind-Value="context.ClientId" Label="Client ID" Required="true" For="@(() => context.ClientId)" Immediate="true" />
+        <MudTextField @bind-Value="context.ClientSecret" Label="Client Secret" Required="false" For="@(() => context.ClientSecret)" Immediate="true" />
+        <MudSelect T="string" Label="Application Type" @bind-Value="context.ApplicationType" Required="true">
+            <MudSelectItem Value=@("native")>Native</MudSelectItem>
+            <MudSelectItem Value=@("web")>Web</MudSelectItem>
+        </MudSelect>
+        <MudSelect T="string" Label="Client Type" @bind-Value="context.ClientType" Required="true">
+            <MudSelectItem Value=@("confidential")>Confidential</MudSelectItem>
+            <MudSelectItem Value=@("public")>Public</MudSelectItem>
+        </MudSelect>
+        <MudDivider Class="my-4" />
+        @foreach(var permissionClass in permissions)
+        {
+            <MudPaper Class="mb-4 pa-4">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">@permissionClass.Key</MudText>
+                @foreach(var permission in permissionClass.Value)
+                {
+                    <MudCheckBox T="bool" Value="context.Permissions.Contains(permission)" Label="@permission" ValueChanged="(e) => TogglePermission(context, permission, e)" Class="mr-4 mb-2" />
+                }
+            </MudPaper>
+            @if(permissionClass.Key != permissions.Keys.Last())
+            {
+                <MudDivider Class="my-4" />
+            }
+        }
+        <MudDivider Class="my-4" />
+        <MudSelect T="string" Label="Consent Type" @bind-Value="context.ConsentType" Required="true">
+            <MudSelectItem Value=@("explicit")>Explicit</MudSelectItem>
+            <MudSelectItem Value=@("implicit")>Implicit</MudSelectItem>
+            <MudSelectItem Value=@("systematic")>Systematic</MudSelectItem>
+        </MudSelect>
+        <FEAR.Blazor.Shared.Components.Forms.EditableList T="string" Label="Redirect Uris"
+                                                          GetItems="() => context.RedirectUris.Select(x => x.AbsoluteUri).ToList()"
+                                                          OnItemDeleted="(item) => DeleteRequestUri(context, item)"
+                                                          OnItemAdded="(item) => AddRequestUri(context, item)" />
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>

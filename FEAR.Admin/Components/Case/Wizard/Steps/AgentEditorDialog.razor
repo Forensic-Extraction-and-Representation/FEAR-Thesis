@@ -1,0 +1,296 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using FEAR.Domain.Agents
+@using FEAR.Host.Domain.Api.Investigation
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using FEAR.Domain.Model.InvestigationStore
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.BugReport" />
+            <MudText Typo="Typo.h6">Agent Entry</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Elevation="0" Class="pa-2" Style="max-height: 600px; overflow-y: auto;">
+            <MudForm @ref="_form" @bind-IsValid="@_success" Model="@Model">
+                <MudPaper Elevation="2" Class="pa-2" Style="max-height: 600px; overflow-y: auto;">
+                    <MudText Typo="Typo.h6">Basic Options</MudText>
+                    <MudText Class="mb-2">
+                        <p>Configure inputs for the agent. The inputs defined here will be supplied to the agent when it is invoked in the inference chain. At least one input is required for the agent to function, and you can include other agents as inputs to create a chain of agents that work together to process information and generate responses.</p>
+                        <p>If you have included other agents in the input, ensure you have included the agents in order within the Agent Chain for the investigation.</p>
+                    </MudText>
+                    <MudTextField @bind-Value="Model.AgentName"
+                                  Label="Agent Name"
+                                  Validation="@(() => string.IsNullOrEmpty(Model.AgentName) ? "Agent Name is required" : null)"
+                                  Required="true"
+                                  ReadOnly="@(Model.AgentName == "QueryHelper")"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true" />
+
+                    <MudTextField @bind-Value="Model.Description"
+                                  Label="Description"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Immediate="true" />
+                                                  
+                    <MudSelect @bind-Value="Model.AgentType"
+                               Label="Agent Type"
+                               Validation="@(() => string.IsNullOrEmpty(Model.AgentType) ? "Agent Type is required" : null)"
+                               Required="true" Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Immediate="true">
+                        @foreach (var agentType in AgentAdapterTypes.FieldOptions)
+                        {
+                            <MudSelectItem Value="@agentType.Name">@agentType.Value</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudPaper>
+                <MudSpacer />
+                <MudPaper Elevation="2" Class="pa-2" Style="max-height: 600px; overflow-y: auto;">
+                    <MudText Typo="Typo.h6">Agent Inputs</MudText>
+                    <MudText Class="mb-2">
+                        <p>Configure inputs for the agent. The inputs defined here will be supplied to the agent when it is invoked in the inference chain. At least one input is required for the agent to function, and you can include other agents as inputs to create a chain of agents that work together to process information and generate responses.</p>
+                        <p>If you have included other agents in the input, ensure you have included the agents in order within the Agent Chain for the investigation.</p>
+                    </MudText>
+
+                    @if (Model.AgentName != "QueryHelper")
+                    {
+                        <MudText Class="mb-4">
+                            <p>Defines the inputs that this agent accepts. To access the prompt from the user, include <span style="font-family:monospace">&lt;Prompt&gt;</span> in the input chain. To access the graph, include <span style="font-family:monospace">&lt;Graph&gt;</span> in the input chain.</p>
+                            <p>You can also include any existing agents as inputs to this agent by including them in the input chain and when the output from the agent is available in the inference chain, it will be supplied.</p>
+                        </MudText>
+                        <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                            <MudSelect T="string"
+                                       @bind-Value="AgentChainEntry"
+                                       Label="Agent"
+                                       Required="Model.InputChain.Length == 0"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Immediate="true">
+                                @foreach (var agentDef in AgentChainList)
+                                {
+                                    <MudSelectItem Value="@agentDef">@agentDef</MudSelectItem>
+
+                                }
+                            </MudSelect>
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" OnClick="@(() => AddAgentToInputChain(AgentChainEntry))">Add</MudButton>
+                        </MudStack>
+                    }
+                    @if (Model.InputChain != null && Model.InputChain.Length > 0)
+                    {
+                        foreach (var agentName in Model.InputChain)
+                        {
+                            <MudPaper Elevation="0" Class="my-4 pa-2" Style="background-color: var(--mud-palette-background-default);">
+                                <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudText Typo="Typo.h6">@agentName</MudText>
+                                    <MudSpacer />
+                                    @if (Model.AgentName != "QueryHelper")
+                                    {
+                                        <MudButton ButtonType="ButtonType.Button"
+                                                   Color="Color.Error"
+                                                   OnClick="@(() => RemoveAgentFromInputChain(agentName))">Remove</MudButton>
+                                    }
+                                </MudStack>
+                            </MudPaper>
+                        }
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-4">
+                            No inputs added to the agent chain. Please add at least one input.
+                        </MudAlert>
+                    }
+                </MudPaper>
+                <MudSpacer />
+                <MudPaper Elevation="2" Class="pa-2" Style="max-height: 600px; overflow-y: auto;">
+                    <MudText Typo="Typo.h6">Additional Agent Options</MudText>
+                    <MudText Class="mb-2">
+                        <p>Configure any additional options for the agent. These options will be passed to the Agent class when constructed.</p>
+                        <p>The default agents of <span style="font-family:monospace">OpenWebAIAgent</span> and <span style="font-family:monospace">OpenAIAgent</span> do not support any additional options,
+                        but custom agents may require additional settings such as model names, temperature settings, etc.</p>
+                        @if(Model.AgentName == "QueryHelper")
+                        {
+                            <p>The QueryHelper supports interpolation of 2 special fields into the template prompt, <span style="font-family:monospace">&lt;prompt&gt;</span> and <span style="font-family:monospace">&lt;ontology&gt;</span>.
+                                These fields will be replaced with the user's query and the investigation ontology (generated at runtime for the investigation), respectively.</p>
+                        }
+                    </MudText>
+                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="mb-4">
+                        <MudTextField T="string"
+                                      @bind-Value="NewAgentOptionName"
+                                      Label="Option Name"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true" />
+                        <MudButton Disabled="string.IsNullOrEmpty(NewAgentOptionName)" ButtonType="ButtonType.Button" Color="Color.Primary" OnClick="AddNewAgentOption">Add</MudButton>
+                    </MudStack>
+                    
+                    <MudSimpleTable Bordered=false Striped=false Dense=false Class="mb-4">
+                        <tbody>
+                            @{
+                                var agentAdapterType = AgentAdapterTypes.FieldOptions.FirstOrDefault(a => a.Name == Model.AgentType);
+                                var adapterPropertyList = agentAdapterType?.FieldMetadata != null ? agentAdapterType.FieldMetadata : Array.Empty<FieldMetadata>();
+                                foreach (var fieldProperty in adapterPropertyList)
+                                {
+                                    if (!Model.AgentOptions.ContainsKey(fieldProperty.Name))
+                                    {
+                                        Model.AgentOptions.Add(fieldProperty.Name, string.Empty);
+                                    }
+
+                                    <tr>
+                                        <td>
+                                            @fieldProperty.Name
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @if (fieldProperty != null)
+                                                {
+                                                    @fieldProperty.Description
+                                                }
+                                            </MudText>
+                                        </td>
+                                        <td>
+                                            @if (fieldProperty != null && fieldProperty.Values != null && fieldProperty.Values.Length > 0)
+                                            {
+                                                <MudSelect T="string"
+                                                           Required="@fieldProperty.IsRequired"
+                                                           Value="@(Model.AgentOptions[fieldProperty.Name]?.ToString() ?? "")"
+                                                           ValueChanged="@(value => Model.AgentOptions[fieldProperty.Name] = value)"
+                                                           Label="@fieldProperty.Name" Variant="Variant.Outlined"
+                                                           Margin="Margin.Dense"
+                                                           Immediate="true">
+                                                    @foreach (var selectOption in fieldProperty.Values)
+                                                    {
+                                                        <MudSelectItem Value="@selectOption.Value">@selectOption.Name</MudSelectItem>
+                                                    }
+                                                </MudSelect>
+                                            }
+                                            else
+                                            {
+
+                                                <MudTextField T="string"
+                                                              Required="@fieldProperty.IsRequired"
+                                                              Value="@(Model.AgentOptions[fieldProperty.Name]?.ToString() ?? "")"
+                                                              ValueChanged="@(value => Model.AgentOptions[fieldProperty.Name] = value)"
+                                                              Label="@fieldProperty.Name" Variant="Variant.Outlined"
+                                                              Margin="Margin.Dense"
+                                                              Immediate="true" />
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+            </MudForm>
+        </MudPaper>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudStack Row="true" Spacing="2">
+            <MudSpacer />
+            <MudButton OnClick="Cancel" Color="Color.Error" Variant="Variant.Outlined">Cancel</MudButton>
+            <MudButton OnClick="Save" Color="@(_success ? Color.Success : Color.Default)" Variant="Variant.Filled">Save</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public AgentDefinition Model { get; set; }
+    [Parameter] public ConfigurationField AgentAdapterTypes { get; set; }
+    [Parameter] public List<string> ExistingAgents { get; set; }
+    protected MudForm _form;
+    private string NewAgentOptionName;
+    private bool _success = false;
+
+    private string AgentChainEntry;
+
+    protected void AddNewAgentOption()
+    {
+        if (!string.IsNullOrEmpty(NewAgentOptionName) && !Model.AgentOptions.ContainsKey(NewAgentOptionName))
+        {
+            Model.AgentOptions[NewAgentOptionName] = string.Empty;
+            NewAgentOptionName = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    protected void AddAgentToInputChain(string agentName)
+    {
+        if (Model.InputChain == null)
+        {
+            Model.InputChain = new[] { agentName };
+        }
+        else
+        {
+            var inputChain = Model.InputChain.ToList();
+            inputChain.Add(agentName);
+
+            Model.InputChain = inputChain.ToArray();
+        }
+        StateHasChanged();
+    }
+
+    protected void RemoveAgentFromInputChain(string agentName)
+    {
+        var inputChain = Model.InputChain.ToList();
+        inputChain.Remove(agentName);
+        Model.InputChain = inputChain.ToArray();
+        StateHasChanged();
+    }
+
+    protected List<string> AgentChainList
+    {
+        get
+        {
+            var list = new List<string> { "<Prompt>", "<Graph>" };
+            list.AddRange(ExistingAgents);
+            list.Remove(Model.AgentName); // Ensure an agent cannot include itself in its input chain
+            list.Remove("QueryHelper");
+            return list;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Model != null)
+        {
+            if (string.IsNullOrEmpty(Model.AgentIdentifier))
+            {
+                Model.AgentIdentifier = "AG-" + Guid.NewGuid().ToString("N").Substring(0, 10).ToLower();
+            }
+
+            string[] requiredOptions = new[] { "ApiKey", "AgentBaseUrl" };
+            foreach (var option in requiredOptions)
+            {
+                if (!Model.AgentOptions.ContainsKey(option))
+                {
+                    Model.AgentOptions[option] = string.Empty;
+                }
+            }
+        }
+
+        base.OnInitialized();
+    }
+
+    protected void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    protected void Save()
+    {
+        _form.Validate();
+        if (!_form.IsValid)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        // Return the updated agent entry and options to the caller
+        MudDialog.Close(DialogResult.Ok(Model));
+    }
+}

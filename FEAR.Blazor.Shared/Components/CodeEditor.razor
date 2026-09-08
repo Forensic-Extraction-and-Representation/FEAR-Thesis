@@ -1,0 +1,128 @@
+﻿@using FEAR.Blazor.Shared.Interop
+@using Microsoft.AspNetCore.Components.Web
+@using MudBlazor
+
+<MudThemeProvider @ref="_mudThemeProvider" IsDarkMode="_isDarkMode" />
+<MudGrid>
+    <MudItem xs="12">
+        <div class="code-editor-container position-relative @(_mudThemeProvider?.IsDarkMode ?? false ? "" : "light-theme")">
+            <textarea placeholder="@Placeholder"
+                      class="code-editor-text"
+                      spellcheck="false"
+                      @bind="_codeText"
+                      disabled="@ReadOnly"
+                      @oninput="OnInput"
+                      @onkeydown="OnKeyDown"
+                      @onkeydown:preventDefault="shouldPrevent"
+                      @onscroll="OnScroll"
+                      @ref=TextAreaRef
+                      style="height: @(MinLines * 14)px; max-height: @(MaxLines * 14)px"></textarea>
+            <pre class="code-editor-highlighting" aria-hidden="true" @ref=HighlightingRef>
+            <code class="language-@Language" @ref=CodeRef></code>
+        </pre>
+        </div>
+    </MudItem>
+</MudGrid>
+@code {
+
+    private MudThemeProvider _mudThemeProvider;
+    private bool _isDarkMode;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+
+            // Set JS variable and initialize services as in the original script
+            await JSRuntime.InvokeVoidAsync("eval", $@"activatePrismHighlighting()");
+
+            await UpdateHighlighting();
+
+            StateHasChanged();
+        }
+    }
+
+    [Parameter]
+    public bool ReadOnly { get; set; } = false;
+
+    [Parameter]
+    public int MinLines { get; set; } = 10;
+
+    [Parameter]
+    public int MaxLines { get; set; } = 30;
+
+    [Parameter]
+    public string Language { get; set; } = "sparql";
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Enter text...";
+
+    private string _codeText = string.Empty;
+
+    [Parameter]
+    public string CodeText
+    {
+        get => _codeText; set
+        {
+            _codeText = value;
+            UpdateHighlighting();
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> CodeTextChanged { get; set; }
+
+    [Inject] IJSRuntime JSRuntime { get; set; }
+
+    [Parameter]
+    public EventCallback OnCtrlEnterPressed { get; set; }
+
+    private PrismInterop prismInterop;
+    private ElementReference TextAreaRef;
+    private ElementReference HighlightingRef;
+    private ElementReference CodeRef;
+
+    protected override void OnInitialized()
+    {
+        prismInterop = new PrismInterop(JSRuntime);
+    }
+
+    private bool shouldPrevent = false;
+
+    private async Task UpdateHighlighting()
+    {
+        await prismInterop.OnInput(_codeText, TextAreaRef, HighlightingRef, CodeRef);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && e.CtrlKey)
+        {
+            OnCtrlEnterPressed.InvokeAsync();
+            return;
+        }
+
+        shouldPrevent = e.Key == "Tab";
+        if (shouldPrevent)
+        {
+            prismInterop.CheckTab(TextAreaRef, e.Key, CodeRef);
+        }
+    }
+
+    public async Task OnScroll(EventArgs e)
+    {
+        // Sync scroll coords of textarea and highlighting element
+        await prismInterop.SyncScroll(TextAreaRef, HighlightingRef);
+    }
+
+    public async Task OnInput(ChangeEventArgs e)
+    {
+        string value = e.Value as String ?? "";
+        if (value.StartsWith('\n'))
+            value = " " + value;
+
+        _codeText = value;
+        await prismInterop.OnInput(value, TextAreaRef, HighlightingRef, CodeRef);
+        await CodeTextChanged.InvokeAsync(value);
+    }
+}

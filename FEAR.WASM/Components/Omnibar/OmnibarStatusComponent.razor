@@ -1,0 +1,29 @@
+﻿@inherits EventSubscriberBase
+
+<div class="form-control">
+    @*Marke into a separate component that can register to the status service*@
+    @*need a static holder for the width to ensure the text doesn't jump around*@
+    <span class="status-icon">
+        @if (IsTimeoutIcon)
+        {
+            <span class="loader"></span> @* If there is a timeout *@
+        }
+        @if (IsInfoIcon)
+        {
+            <span class="status-info"><i class="fa-solid fa-circle-info fa-beat"></i></span> @* If there is no timeout *@
+        }
+        @if (IsIdleIcon)
+        {
+            <span class="status-info"><i class="fa-solid fa-pause fa-beat" style="--fa-animation-duration: 4s;"></i></span> @*For when there is no event in the queue*@
+        }
+    </span>
+    @if (CurrentStatusEvent != null)
+    {
+        <span class="status-text">@CurrentStatusEvent.StatusText</span>
+    }
+    else
+    {
+        <span class="status-text">Idle</span>
+    }
+</div>
+

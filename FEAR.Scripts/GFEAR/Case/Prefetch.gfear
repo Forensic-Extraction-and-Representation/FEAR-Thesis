@@ -1,0 +1,52 @@
+define codifier("WindowsPrefetch", "GraphCodify/CaseOntology/WindowsPrefetch");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+ontology("http://www.w3.org/ns/prov#", "prov");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+prefix("uco-action", "uco:action");
+
+accepts(Name, SID, Path, ExecutionCount, LoadedDlls);
+result prefetch as uco-observable:Application with {
+    //create property uco-core:name as xsd:string with Name;
+    //create property uco-observable:filePath as xsd:string  with Path;  
+    //create property uco-observable:mostRecentRunTime as xsd:dateTime with LastExecutionDateTime;
+    //create property uco-action:actionCount as xsd:integer with ExecutionCount;
+
+    create collection loadedDllList as rdf:List of uco-observable:File;
+    foreach Dll in LoadedDlls {  
+        create entity dllEntry as uco-observable:File with  {
+            create entity fileFacet as uco-observable:FileFacet with {
+                create property uco-observable:filePath as xsd:string with Dll;  
+            } identified by required uco-observable:filePath;
+
+            create property uco-core:hasFacet with entity fileFacet;
+		} identified by required entity uco-core:hasFacet fileFacet;
+
+        append entity dllEntry to loadedDllList;
+    }
+
+    create property prov:wasDerivedFrom with collection loadedDllList;
+
+    create entity windowsAccount as uco-observable:WindowsAccount with {
+        create entity accountFacet as uco-observable:AccountFacet with {
+            create property uco-observable:accountIdentifier as xsd:string with SID;
+        } identified by required uco-observable:accountIdentifier;
+        create property uco-core:hasFacet with entity accountFacet;
+    } identified by required entity uco-core:hasFacet accountFacet;
+
+    create property uco-observable:effectiveUser with entity windowsAccount;
+    
+    create entity exeFile as uco-observable:File with {
+        create entity exeFileFacet as uco-observable:FileFacet with {
+            create property uco-observable:filePath as xsd:string with Path;  
+        } identified by required uco-observable:filePath;
+
+        create property uco-core:hasFacet with entity exeFileFacet;
+	} identified by required entity uco-core:hasFacet exeFileFacet;
+
+    create property prov:wasDerivedFrom with entity exeFile;
+} identified by required entity prov:wasDerivedFrom exeFile;

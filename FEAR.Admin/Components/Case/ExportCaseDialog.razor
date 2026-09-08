@@ -1,0 +1,82 @@
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Model
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.FileUpload" />
+            <MudText Typo="Typo.h6">Export Case — @Investigation.Name</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudPaper Elevation="0" Class="pa-2" Style="max-height: 620px; overflow-y: auto;">
+
+            <MudText Typo="Typo.subtitle1" Class="mb-1">Import Message</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                This message will be shown to the user before the import begins. Leave blank to skip.
+            </MudText>
+            <MudTextField @bind-Value="_importMessage"
+                          Label="Message (optional)"
+                          Lines="3"
+                          Variant="Variant.Outlined"
+                          Class="mb-4" />
+
+            <MudDivider Class="mb-4" />
+            <MudText Typo="Typo.subtitle1" Class="mb-1">Sections to Export</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                Case details (name, number, type, status, date, namespace) are always included.
+            </MudText>
+
+            <MudCheckBox @bind-Value="_includeDirectories" Label="Directories" />
+            <MudCheckBox @bind-Value="_includeGraphSettings" Label="Graph Settings" />
+            <MudCheckBox @bind-Value="_includeConnectionSettings" Label="Connection Settings" />
+            <MudCheckBox @bind-Value="_includeRepositories" Label="Repositories" />
+            <MudCheckBox @bind-Value="_includeAgentConfiguration" Label="Agent Configuration" />
+            <MudCheckBox @bind-Value="_includeQueries" Label="Queries" />
+
+            @if (_includeAgentConfiguration && _agentSecrets.Count > 0)
+            {
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.subtitle1" Class="mb-1">Agent Secrets</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                    The following secret fields were detected in the agent configuration.
+                    Uncheck a field to redact its value from the export — the importer will be prompted to supply it.
+                </MudText>
+                <MudSimpleTable Dense="true" Bordered="false" Striped="true" Class="mb-2">
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Field</th>
+                            <th>Include value?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var secret in _agentSecrets)
+                        {
+                            <tr>
+                                <td>@secret.AgentKey</td>
+                                <td>@secret.FieldName</td>
+                                <td>
+                                    <MudCheckBox @bind-Value="secret.IsIncluded" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            }
+            else if (_includeAgentConfiguration && Configuration?.AgentConfiguration?.Agents?.Count > 0)
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-2">No secret fields detected in the configured agents.</MudAlert>
+            }
+
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudSpacer />
+        <MudButton OnClick="Cancel" Color="Color.Default" Variant="Variant.Outlined">Cancel</MudButton>
+        <MudButton OnClick="Export" Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Download">Export</MudButton>
+    </DialogActions>
+</MudDialog>

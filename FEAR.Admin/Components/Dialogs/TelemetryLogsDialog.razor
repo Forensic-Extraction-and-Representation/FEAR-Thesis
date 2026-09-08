@@ -1,0 +1,65 @@
+@using FEAR.Admin.Services.Management
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Telemetry
+@inject InvestigationService InvestigationService
+@inject MudBlazor.IDialogService DialogService
+@implements IDisposable
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.BugReport" />
+            <MudText Typo="Typo.h6">Investigation Telemetry - @InvestigationName</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudPaper Class="pa-2" Style="max-height: 600px; overflow-y: auto;">
+            @if (_isLoading && _signals.Count == 0)
+            {
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="mt-2">Loading telemetry...</MudText>
+            }
+            else if (_signals.Count == 0)
+            {
+                <MudText>No telemetry signals available.</MudText>
+            }
+            else
+            {
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+                    <MudText Typo="Typo.caption">Showing @_signals.Count signals</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Last fetch: @_lastFetchDisplay</MudText>
+                </MudStack>
+
+                <MudVirtualize Items="_signals" ItemSize="64">
+                    <ChildContent>
+                        <div class="d-flex flex-column ml-2 pa-2" style="border-bottom: 1px solid var(--mud-palette-divider);">
+                            <div class="d-flex align-center gap-2 mb-1">
+                                <MudIcon Icon="@GetIconFor(context.SignalType)" Color="@GetColorFor(context.SignalType)" Size="Size.Small" Class="pa-2" />
+                                <MudChip T="string" Size="Size.Small" Color="@GetColorFor(context.SignalType)">@context.SignalType</MudChip>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff")</MudText>
+                                <MudText Typo="Typo.body2" Class="fw-bold" Style="margin-left:auto">@context.SignalSource</MudText>
+                            </div>
+                            <MudText Typo="Typo.body2" Style="white-space:pre-wrap; word-break:break-word;">@context.SignalData</MudText>
+                        </div>
+                    </ChildContent>
+                </MudVirtualize>
+            }
+
+            @if (_hasError)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-2">@_errorMessage</MudAlert>
+            }
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudStack Row="true" Spacing="2">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Auto-refresh: @_refreshInterval ms</MudText>
+            <MudSpacer />
+            <MudButton OnClick="Refresh" Variant="Variant.Text">Refresh Now</MudButton>
+            <MudButton OnClick="Close" Color="Color.Primary" Variant="Variant.Filled">Close</MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>

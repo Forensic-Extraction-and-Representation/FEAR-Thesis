@@ -1,0 +1,61 @@
+{
+  "InvestigationName": "New-Case",
+  "OntologyOutputFormat": "ttl",
+  "TranspiledSourceOutputRoot": "AssemblySource",
+  "OutputTranspiledSource": true,
+  "PreCompiledDirectoryOption": "PreCompiled",
+  "ScriptDirectoryOption": "Source",
+  "PackageDirectoryOption": "Packages",
+  "NamespaceOption": "http://inv.fear.graph/",
+  "NamespaceAbbrevOption": "inv",
+  "WorkingDirectory": "new-case",
+  "GraphManager": {
+    "RemoteGraph": false,
+    "RemoteGraphSetupProvider": null
+  },
+  "AgentOptions": {
+    "Enabled": true,
+    "DefaultAgent": "FEAR-DefaultAgent",
+    "AgentOrder": [
+      "FEAR-DefaultAgent"
+    ],
+    "Agents": {
+      "FEAR-DefaultAgent": {
+        "AgentId": "",
+        "AgentName": "FEAR-DefaultAgent",
+        "AgentType": "<Replaced>",
+        "Description": "",
+        "InputChain": [
+          "<Prompt>"
+        ],
+        "AgentOptions": {
+          "Model": "<Replaced>",
+          "ApiKey": "<Replaced>",
+          "AgentBaseUrl": "<Replaced>",
+          "SystemPrompt": null,
+          "SystemPromptFile": null
+        }
+      }
+    }
+  },
+  "Connections": {
+    "GraphDBConnection": {
+      "Authentication": null
+    },
+    "DatabaseConnections": {}
+  },
+  "Repositories": {
+    "GFEAR": [],
+    "RFEAR": []
+  },
+  "PrecompiledLibraries": {
+    "CFEAR": [],
+    "GFEAR": []
+  },
+  "PackagedSources": [],
+  "FindEntityStrategyFactory": {
+    "Local": "FEAR.Runtime.KnowledgeGraph.EntitySearch.InMemory.DefaultFindEntityStrategyFactory, FEAR.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "Remote": "FEAR.Runtime.KnowledgeGraph.Sparql.EntitySearch.PathFindEntityStrategyFactory, FEAR.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+  },
+  "Id": "4ba662e4-454d-4697-9ff8-68829256dda5"
+}

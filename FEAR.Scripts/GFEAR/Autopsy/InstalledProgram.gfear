@@ -1,0 +1,19 @@
+﻿define codifier("TSK_INSTALLED_PROG", "DFIO/Autopsy/InstalledProgram");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, ProgramName, DateTime);
+
+result InstalledProgram as aut:InstalledProgram with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:installedDateTime as xsd:dateTime with DateTime;
+	create property aut:programName as xsd:string with ProgramName;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:installedDateTime, required aut:programName, required entity aut:sourceHost suspectHost;

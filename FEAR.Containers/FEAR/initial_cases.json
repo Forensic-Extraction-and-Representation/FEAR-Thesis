@@ -1,0 +1,50 @@
+[
+  {
+    "InvestigationName": "Local Case",
+    "OntologyOutputFormat": "ttl",
+    "TranspiledSourceOutputRoot": "AssemblySource",
+    "OutputTranspiledSource": true,
+    "PreCompiledDirectoryOption": "PreCompiled",
+    "ScriptDirectoryOption": "Source",
+    "PackageDirectoryOption": "Packages",
+    "NamespaceOption": "http://inv.fear.graph/",
+    "NamespaceAbbrevOption": "inv",
+    "WorkingDirectory": "local-case",
+    "GraphManager": {
+      "RemoteGraph": false,
+      "RemoteGraphSetupProvider": null
+    },
+    "AgentOptions": {
+      "Enabled": false,
+      "DefaultAgent": "",
+      "AgentOrder": [
+      ],
+      "Agents": {
+      }
+    },
+    "Connections": {
+      "GraphDBConnection": {
+        "Authentication": null,
+        "Language": null,
+        "Endpoint": null,
+        "Username": null,
+        "Password": null
+      },
+      "DatabaseConnections": {}
+    },
+    "Repositories": {
+      "GFEAR": [],
+      "RFEAR": []
+    },
+    "PrecompiledLibraries": {
+      "CFEAR": [],
+      "GFEAR": []
+    },
+    "FindEntityStrategyFactory": {
+      "Local": "FEAR.Runtime.KnowledgeGraph.EntitySearch.InMemory.DefaultFindEntityStrategyFactory, FEAR.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Remote": null
+    },
+    "Id": "d869b029-c21e-4c18-b189-2b3bfce5a863",
+    "PackagedSources": []
+  }
+]

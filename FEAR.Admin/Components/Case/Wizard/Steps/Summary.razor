@@ -1,0 +1,134 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using FEAR.Domain.Model.InvestigationStore
+@using FEAR.Admin.Components.Case.Wizard.Components
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Summary", Icons.Material.Filled.SettingsSuggest)]
+
+<MudText Typo="Typo.h5" Class="mb-4">Summary</MudText>
+
+<MudText Class="mb-4">
+    The following is a summary of the case configuration. Please review the information below before finishing the wizard.
+</MudText>
+
+<MudGrid Style="overflow-wrap: break-word;">
+    <MudItem xs="12" md="6">
+        <MudCard Class="mb-4" Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Case Details</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText><b>Name:</b> @Model.InvestigationInfo.Name</MudText>
+                <MudText><b>Case Number:</b> @Model.InvestigationInfo.CaseNumber</MudText>
+                <MudText><b>Case Type:</b> @Model.InvestigationInfo.CaseType</MudText>
+                <MudText><b>Case Status:</b> @Model.InvestigationInfo.CaseStatus</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Class="mb-4" Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Directories</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText><b>Working Directory:</b> @Model.Configuration.WorkingDirectory</MudText>
+                <MudText><b>Script Directory:</b> @Model.Configuration.ScriptDirectoryOption</MudText>
+                <MudText><b>Package Directory:</b> @Model.Configuration.PackageDirectoryOption</MudText>
+                <MudText><b>Pre-Compiled Directory:</b> @Model.Configuration.PreCompiledDirectoryOption</MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudCard Class="mb-4" Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Graph Settings</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudText><b>Graph Type:</b> @(Model.Configuration.GraphManager.RemoteGraph ? "Remote" : "Local")</MudText>
+                    </MudItem>
+                    @if (Model.Configuration.GraphManager.RemoteGraph)
+                    {
+                        <MudItem xs="12" md="6">
+                            <MudText><b>Graph Database Type:</b> @Model.Configuration.GraphManager.RemoteGraphSetupProvider</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudText><b>Graph Database Endpoint:</b> @GetValue(Model.Configuration.Connections.GraphDBConnection, "Endpoint")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudText><b>Authentication:</b> @(GetBoolValue(Model.Configuration.Connections.GraphDBConnection, "Authentication") ? "Enabled" : "Disabled")</MudText>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<MudCard Class="mb-4" Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Repositories & Libraries</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                @RenderList("GFEAR Scripts", GetRepoList("GFEAR"))
+                @RenderList("RFEAR Scripts", GetRepoList("RFEAR"))
+            </MudItem>
+            <MudItem xs="12" md="6">
+                @RenderList("CFEAR Libraries", GetLibraryList("CFEAR"))
+                @RenderList("GFEAR Libraries", GetLibraryList("GFEAR"))
+                @RenderList("RFEAR Libraries", GetLibraryList("RFEAR"))
+                @RenderList("FEAR Packages", Model.Configuration.PackagedSources)
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+<AgentFlowVisualization Agents="@Model.Configuration.AgentConfiguration.Agents"
+                        DefaultAgent="@Model.Configuration.AgentConfiguration.DefaultAgent"
+                        Enabled="@Model.Configuration.AgentConfiguration.Enabled" />
+
+@code {
+    public override bool RequiredValidation => false;
+
+    private IEnumerable<string> GetRepoList(string key) =>
+        Model.Configuration.Repositories.TryGetValue(key, out var list) ? list : Array.Empty<string>();
+
+    private IEnumerable<string> GetLibraryList(string key) =>
+        Model.Configuration.PrecompiledLibraries.TryGetValue(key, out var list) ? list : Array.Empty<string>();
+
+    private object GetValue(Dictionary<string, object> dict, string key) =>
+        dict.TryGetValue(key, out var val) ? val : null;
+
+    private bool GetBoolValue(Dictionary<string, object> dict, string key) =>
+        dict.TryGetValue(key, out var val) && val is bool b && b;
+
+    private RenderFragment RenderList(string title, IEnumerable<string> items) => __builder =>
+    {
+        <MudText Typo="Typo.subtitle2" Class="mt-3 mb-1"><b>@title</b></MudText>
+        if (items == null || !items.Any())
+        {
+            <MudText Typo="Typo.body2" Class="ml-4" Color="Color.Secondary"><i>None configured</i></MudText>
+        }
+        else
+        {
+            foreach (var item in items)
+            {
+                <MudText Typo="Typo.body2" Class="ml-4">• @item</MudText>
+            }
+        }
+    };
+}

@@ -1,0 +1,18 @@
+define codifier("relationship", "Collector/Mitre/AttackPattern");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("https://purl.org/ontology/mitre/", "ma");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(id, source_ref, target_ref, relationship_type);
+
+result Source <"/{source_ref}"> as owl:Thing with {
+	create property ma:Id as xsd:string with source_ref;
+	
+	create entity Target <"/{target_ref}"> as owl:Thing with {
+		create property ma:Id as xsd:string with target_ref;
+	} identified by required ma:Id;
+
+	create property ma:relationship_type as xsd:string with relationship_type;
+	create property ma:related_to with entity Target;
+} identified by required ma:Id;

@@ -1,0 +1,33 @@
+﻿@using FEAR.Blazor.Shared.Components.Forms
+@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Package Repositories", Icons.Material.Filled.Archive)]
+
+<MudText Typo="Typo.h5" Class="mb-4"> Package Repositories</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        Package repositories are synchronized from a local or remote repository to the case Package directory for loading at runtime by the case.<br />
+    </MudText>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <EditableList T="string"
+                      GetItems="@(() => Model.Configuration.PackagedSources)"
+                      OnItemAdded="@(item => Model.Configuration.PackagedSources.Add(item))"
+                      OnItemDeleted="@(item => Model.Configuration.PackagedSources.Remove(item))"
+                      Label="FEAR Packages"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+                  
+    </MudPaper>
+</MudForm>
+
+@code {
+
+    public override Task<bool> IsValidAsync()
+    {
+        return Task.FromResult(true);
+    }
+}

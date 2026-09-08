@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>aspnet-FEAR.Hosted-8d219f64-9a12-4c25-8391-a5ad3df9a4b3</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Remove="compilerconfig.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.20" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.20" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.20" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.20" />
+		<PackageReference Include="OpenIddict.AspNetCore" Version="7.1.0" />
+		<PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\FEAR.Admin\FEAR.Admin.csproj" />
+		<ProjectReference Include="..\FEAR.Blazor.Shared\FEAR.Blazor.Shared.csproj" />
+		<ProjectReference Include="..\FEAR.Domain\FEAR.Domain.csproj" />
+		<ProjectReference Include="..\FEAR.Runtime\FEAR.Runtime.csproj" />
+		<ProjectReference Include="..\FEAR.Host.Core\FEAR.Host.Core.csproj" />
+		<ProjectReference Include="..\FEAR.Security\FEAR.Security.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="libman.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
+</Project>

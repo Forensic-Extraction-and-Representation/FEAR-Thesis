@@ -1,0 +1,21 @@
+﻿define codifier("TSK_WEB_COOKIE", "DFIO/Autopsy/WebCookie");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, CreatedDateTime, Name, Domain, URL);
+
+result WebCookie as aut:WebCookie with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:createdDateTime as xsd:dateTime with CreatedDateTime;
+	create property aut:name as xsd:string with Name;
+	create property aut:domain as xsd:string with Domain;
+	create property aut:url as xsd:string with URL;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:createdDateTime, required aut:domain, required aut:url, required aut:name, required entity aut:sourceHost suspectHost;

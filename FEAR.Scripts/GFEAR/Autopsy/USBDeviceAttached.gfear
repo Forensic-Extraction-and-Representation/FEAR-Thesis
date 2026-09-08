@@ -1,0 +1,21 @@
+﻿define codifier("TSK_DEVICE_ATTACHED", "DFIO/Autopsy/USBDeviceAttached");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, DeviceModel, DeviceID, DeviceMake, DateTime);
+
+result USBDeviceAttached as aut:USBDeviceAttached with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:deviceModel as xsd:string with DeviceModel;
+	create property aut:deviceID as xsd:string with DeviceID;
+	create property aut:deviceMake as xsd:string with DeviceMake;
+	create property aut:attachedDateTime as xsd:dateTime with DateTime;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:attachedDateTime, required aut:deviceID, required entity aut:sourceHost suspectHost, optional aut:deviceModel, optional aut:deviceMake;

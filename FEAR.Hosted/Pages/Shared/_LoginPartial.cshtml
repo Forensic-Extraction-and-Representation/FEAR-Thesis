@@ -1,0 +1,38 @@
+﻿@using FEAR.Domain;
+@using FEAR.Host.Core.Identity;
+@using Microsoft.AspNetCore.Identity
+
+@{
+    var _permissionProvider = Context.RequestServices.GetService<IPermissionProvider>();
+    var _identityProvider = Context.RequestServices.GetService<IIdentityProvider>();
+
+    var IsAuthenticated = User.Identity.IsAuthenticated;
+    string UserName = string.Empty;
+
+    if (IsAuthenticated)
+    {
+        var userInfo = _identityProvider.GetUserInfoFromClaim(User);
+        var user = _identityProvider.GetUserFromClaim(userInfo);
+        UserName = user?.UserName ?? User.Identity.Name;
+    }
+}
+
+<ul class="navbar-nav">
+    @if (IsAuthenticated)
+    {
+        <li class="nav-item d-flex align-items-center me-3">
+             <span class="navbar-text text-dark me-2">Hello, <strong>@UserName</strong>!</span>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" class="form-inline" asp-page="/Login/Logout" asp-route-returnUrl="@Context.Request.Path" method="post">
+                <button type="submit" class="nav-link btn btn-link text-dark border-0 bg-transparent">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-page="/Login/Login">Login</a>
+        </li>
+    }
+</ul>

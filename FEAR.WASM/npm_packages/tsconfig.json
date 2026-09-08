@@ -1,0 +1,14 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "target": "es6"
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}

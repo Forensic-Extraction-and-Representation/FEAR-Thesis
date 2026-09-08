@@ -1,0 +1,74 @@
+﻿@using FEAR.Admin.Services.Management
+@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Model.InvestigationStore
+@using System.Text.Json;
+@using FEAR.Blazor.Shared.Components;
+@using FEAR.Host.Domain.Api.Management.Security
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((Model.UserId == Guid.Empty) ? "Add User To Investigation" : $"Assign Roles: {Model.UserName}")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudPaper Class="ma-4" Style="background-color: var(--mud-palette-background-default);">
+            <MudAutocomplete T="FEAR.Domain.Model.Authentication.User" ToStringFunc="(u => u?.UserName ?? string.Empty)" @bind-Value="Model.User" Label="User" Disabled="@(!Model.IsNew)" Dense="true" FullWidth="true"
+                             SearchFunc="SearchUsers" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">Assign Investigation Roles</MudText>
+            <MudSelect T="Guid" MultiSelection=false @bind-Value="Model.RoleId" Dense="true" FullWidth="true">
+                @foreach (var r in AllRoles)
+                {
+                    <MudSelectItem Value="@r.RoleId">@r.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save" Disabled="@(Model.User == null || Model.RoleId == Guid.Empty)">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    
+    [Parameter] public InvestigationUserEditorModel Model { get; set; }
+    
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public List<FEAR.Domain.Model.Authentication.User> AllUsers { get; set; }
+    [Parameter] public List<FEAR.Domain.Model.Authentication.Role> AllRoles { get; set; }
+        
+    public record InvestigationUserEditorModel
+    {
+        public Guid UserId { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public bool IsNew => UserId == Guid.Empty;
+        public FEAR.Domain.Model.Authentication.User User { get; set; }
+        public Guid RoleId { get; set; } = Guid.Empty;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void Save()
+    {
+        if (Model.User != null)
+        {
+            Model.UserId = Model.User.UserId;
+            Model.UserName = Model.User.UserName;
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+
+    private Task<IEnumerable<FEAR.Domain.Model.Authentication.User>> SearchUsers(string value, CancellationToken cancellationToken)
+    {
+        // Need to make this query the server.
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(AllUsers.AsEnumerable());
+        return Task.FromResult(AllUsers.Where(u => (u.UserName?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false) || (u.Email?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false)));
+    }
+}

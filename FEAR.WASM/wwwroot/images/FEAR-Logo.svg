@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="111.38958mm"
+   height="115.09375mm"
+   viewBox="0 0 111.38958 115.09375"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   sodipodi:docname="FEAR-Logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.74029882"
+     inkscape:cx="332.97365"
+     inkscape:cy="540.32235"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       x1="755.5"
+       y1="55"
+       x2="755.5"
+       y2="490"
+       gradientUnits="userSpaceOnUse"
+       spreadMethod="reflect"
+       id="stroke0">
+      <stop
+         offset="0"
+         stop-color="#4290BE"
+         id="stop9" />
+      <stop
+         offset="0.53"
+         stop-color="#4290BE"
+         id="stop11" />
+      <stop
+         offset="0.53"
+         stop-color="#002943"
+         id="stop13" />
+      <stop
+         offset="1"
+         stop-color="#002943"
+         id="stop15" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-16.857555,-5.7130535)">
+    <g
+       transform="matrix(0.26458333,0,0,0.26458333,-127.34036,-8.8390296)"
+       id="g72">
+      <path
+         d="m 878,83 v 69.68"
+         stroke="#002943"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         id="path20" />
+      <path
+         d="M 627,137 884.714,405.976"
+         stroke="#0ba2c3"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         id="path22" />
+      <path
+         d="m 568,399 h 74.829"
+         stroke="#002943"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         id="path24" />
+      <path
+         d="M 755,71 V 473.4"
+         stroke="#002943"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         id="path26" />
+      <path
+         d="M 0,0 389.839,1.04987e-4"
+         stroke="#002943"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         transform="matrix(-1,0,0,1,950.839,272)"
+         id="path28" />
+      <path
+         d="M 561,132.971 C 561,98.7455 588.746,71 622.971,71 H 888.029 C 922.254,71 950,98.7455 950,132.971 V 412.029 C 950,446.254 922.254,474 888.029,474 H 622.971 C 588.746,474 561,446.254 561,412.029 Z"
+         stroke="url(#stroke0)"
+         stroke-width="32"
+         stroke-miterlimit="8"
+         fill="none"
+         fill-rule="evenodd"
+         id="path30"
+         style="stroke:url(#stroke0)" />
+      <path
+         d="m 848,144 c 0,-16.569 13.208,-30 29.5,-30 16.292,0 29.5,13.431 29.5,30 0,16.569 -13.208,30 -29.5,30 -16.292,0 -29.5,-13.431 -29.5,-30 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path32" />
+      <path
+         d="m 605,144 c 0,-16.569 12.984,-30 29,-30 16.016,0 29,13.431 29,30 0,16.569 -12.984,30 -29,30 -16.016,0 -29,-13.431 -29,-30 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path34" />
+      <path
+         d="m 848,398.5 c 0,-16.292 13.208,-29.5 29.5,-29.5 16.292,0 29.5,13.208 29.5,29.5 0,16.292 -13.208,29.5 -29.5,29.5 -16.292,0 -29.5,-13.208 -29.5,-29.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path36" />
+      <path
+         d="m 605,398.5 c 0,-16.292 12.984,-29.5 29,-29.5 16.016,0 29,13.208 29,29.5 0,16.292 -12.984,29.5 -29,29.5 -16.016,0 -29,-13.208 -29,-29.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path38" />
+      <path
+         d="m 685,134.5 c 0,-9.113 7.387,-16.5 16.5,-16.5 9.113,0 16.5,7.387 16.5,16.5 0,9.113 -7.387,16.5 -16.5,16.5 -9.113,0 -16.5,-7.387 -16.5,-16.5 z"
+         fill="#f98197"
+         fill-rule="evenodd"
+         id="path40" />
+      <path
+         d="m 792,134.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#00ff00"
+         fill-rule="evenodd"
+         id="path42" />
+      <path
+         d="m 685,407.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path44" />
+      <path
+         d="m 792,407.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path46" />
+      <path
+         d="m 611,325.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#22f6f7"
+         fill-rule="evenodd"
+         id="path48" />
+      <path
+         d="m 866,325.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#fd5c2f"
+         fill-rule="evenodd"
+         id="path50" />
+      <path
+         d="M 685,223.501 C 685,210.522 695.522,200 708.5,200 h 94 c 12.978,0 23.5,10.522 23.5,23.501 v 94.998 C 826,331.478 815.478,342 802.5,342 h -94 C 695.522,342 685,331.478 685,318.499 Z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path52" />
+      <path
+         d="m 611,215.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path54" />
+      <path
+         d="m 866,215.5 c 0,-9.113 7.611,-16.5 17,-16.5 9.389,0 17,7.387 17,16.5 0,9.113 -7.611,16.5 -17,16.5 -9.389,0 -17,-7.387 -17,-16.5 z"
+         fill="#002943"
+         fill-rule="evenodd"
+         id="path56" />
+      <path
+         d="m 624,143.5 c 0,-5.247 4.253,-9.5 9.5,-9.5 5.247,0 9.5,4.253 9.5,9.5 0,5.247 -4.253,9.5 -9.5,9.5 -5.247,0 -9.5,-4.253 -9.5,-9.5 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path58" />
+      <path
+         d="m 743,141 c 0,-6.627 5.373,-12 12,-12 6.627,0 12,5.373 12,12 0,6.627 -5.373,12 -12,12 -6.627,0 -12,-5.373 -12,-12 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path60" />
+      <path
+         d="m 868,143.5 c 0,-5.247 4.253,-9.5 9.5,-9.5 5.247,0 9.5,4.253 9.5,9.5 0,5.247 -4.253,9.5 -9.5,9.5 -5.247,0 -9.5,-4.253 -9.5,-9.5 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path62" />
+      <path
+         d="m 738,271 c 0,-9.389 7.835,-17 17.5,-17 9.665,0 17.5,7.611 17.5,17 0,9.389 -7.835,17 -17.5,17 -9.665,0 -17.5,-7.611 -17.5,-17 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path64" />
+      <path
+         d="m 624,399.5 c 0,-5.247 4.253,-9.5 9.5,-9.5 5.247,0 9.5,4.253 9.5,9.5 0,5.247 -4.253,9.5 -9.5,9.5 -5.247,0 -9.5,-4.253 -9.5,-9.5 z"
+         fill="#f6a2c9"
+         fill-rule="evenodd"
+         id="path66" />
+      <path
+         d="m 743,397 c 0,-6.627 5.373,-12 12,-12 6.627,0 12,5.373 12,12 0,6.627 -5.373,12 -12,12 -6.627,0 -12,-5.373 -12,-12 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path68" />
+      <path
+         d="m 868,399 c 0,-4.971 4.253,-9 9.5,-9 5.247,0 9.5,4.029 9.5,9 0,4.971 -4.253,9 -9.5,9 -5.247,0 -9.5,-4.029 -9.5,-9 z"
+         fill="#4290be"
+         fill-rule="evenodd"
+         id="path70" />
+    </g>
+  </g>
+</svg>

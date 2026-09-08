@@ -1,0 +1,60 @@
+﻿@using FEAR.Blazor.Shared.Interop
+
+<div class="modal fade" id="@modalId-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@title</h5>
+                @Header
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Body
+            </div>
+            <div class="modal-footer">
+                @Footer
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] BootstrapInterop BootstrapInterop { get; set; }
+
+    // Need properties for the id of the dialog and the components for the header(title), body, and footer
+
+    [Parameter] public string modalId { get; set; } = "default";
+    [Parameter] public string title { get; set; } = "Modal Title";
+    [Parameter] public RenderFragment Body { get; set; }
+    [Parameter] public RenderFragment Header { get; set; }
+    [Parameter] public RenderFragment Footer { get; set; }
+
+    public class ModalOptions
+    {
+        public string Backdrop { get; set; } = "static"; // Options: true, false, 'static'
+        public string Top { get; set; } = "100px"; // Options: 'auto', '100px', '50%'
+        public string Left { get; set; } = "50px";
+    }
+
+    public async Task Show(ModalOptions options = null)
+    {
+        options ??= new ModalOptions();
+
+        await BootstrapInterop.InitializeModal(modalId + "-modal", options.Backdrop, options.Top, options.Left);
+    }
+
+    public async Task Hide()
+    {
+        await BootstrapInterop.CloseModal(modalId + "-modal");
+    }
+    public async Task Close() => Hide();
+    
+    public async Task Draggable()
+    {
+        await BootstrapInterop.DraggableModal(modalId + "-modal");
+    }
+
+}

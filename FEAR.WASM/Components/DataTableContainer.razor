@@ -1,0 +1,19 @@
+﻿@using static FEAR.WASM.Components.DataTable
+
+<link rel="stylesheet" href="/css/components/data-table.css" />
+
+@foreach (var config in DataTableConfigs)
+{
+    <DataTable TableConfig="config" />
+}
+
+@code {
+    public List<DataTableConfig> DataTableConfigs { get; set; } = new List<DataTableConfig>();
+
+    public void AddDataTableConfig(DataTableConfig config)
+    {
+        config.Id = $"id_{DataTableConfigs.Count + 1}";
+        DataTableConfigs.Add(config);
+        StateHasChanged();
+    }
+}

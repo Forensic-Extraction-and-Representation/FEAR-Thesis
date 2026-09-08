@@ -1,0 +1,184 @@
+﻿// Root Theme Variables
+.code-editor-container {
+    --syntax-bg: #1e1f29; /* dark slate, almost black */
+    --syntax-text: #d0d0d0; /* light gray code text */
+    --caret-color: #4acff9; /* pastel cyan cursor */
+    --highlight-bg: rgba(255,255,255,0.03); /* subtle, almost invisible */
+    --syntax-keyword: #5bc0e8; /* pastel blue */
+    --syntax-string: #98d8b3; /* pastel mint‑green */
+    --syntax-comment: #888888; /* soft medium gray */
+    --syntax-number: #f4b2b2; /* light coral / pastel pink */
+    --syntax-punctuation: #81e6d9; /* pastel teal */
+    --syntax-variable: #c9a6f5; /* pastel lilac */
+    --syntax-function: #f7b8e5; /* pastel magenta */
+    --syntax-operator: #ffeaa7; /* pastel yellow */
+    --syntax-constant: #ffd6e0; /* pastel peach */
+    --syntax-attribute: #e8f6ff; /* very light sky‑blue */
+    // Light Theme Variables
+    &.light-theme {
+        --syntax-bg: #fafafa; /* near‑white */
+        --syntax-text: #333333; /* dark gray text */
+
+        --caret-color: #4acff9;
+        --highlight-bg: rgba(0,0,0,0.04);
+        --syntax-keyword: #1d71bf; /* dark blue */
+        --syntax-string: #2b7a7a; /* teal‑green */
+        --syntax-comment: #7a7a7a; /* gray */
+        --syntax-number: #d33c3c; /* bright red */
+        --syntax-punctuation: #0d6efd; /* bright blue */
+        --syntax-variable: #6f42c1; /* purple */
+        --syntax-function: #28a745; /* green */
+        --syntax-operator: #ffc107; /* yellow */
+        --syntax-constant: #17a2b8; /* cyan */
+        --syntax-attribute: #e9ecef; /* light gray */
+    }
+}
+
+
+
+// Code Editor Stylingffire
+::deep .code-editor-container {
+    font-family: "Fira Code", monospace;
+}
+
+// Editing & Highlighting Styles
+.code-editor-text, .code-editor-highlighting {
+    border: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 14px;
+    font-family: monospace;
+    letter-spacing: normal;
+    line-height: 1.5;
+    tab-size: 2;
+    top: 0;
+    left: 0;
+    overflow:hidden;
+    white-space: pre;
+}
+
+// Editing Text Area
+.code-editor-text {
+    padding: 0.4em 0.8em;
+    z-index: 2;
+    position: relative;
+    margin: 0px;
+    color: transparent;
+    overflow: auto;
+    background: transparent;
+    caret-color: var(--caret-color);
+    resize: none;
+    display: block;
+    field-sizing: content;
+    max-height: 90px;
+
+    &:focus {
+        outline: none !important;
+    }
+}
+
+// Highlighting Area
+.code-editor-highlighting {
+    padding: 0.4em 0.8em;
+    position: absolute;
+    pointer-events: none;
+    background: var(--highlight-bg);
+    z-index: 1;
+}
+
+// Code Blocks
+pre[class*="language-"] {
+    padding: 0.4em 0.8em;
+    margin: 0px;
+}
+
+// Inline Code
+:not(pre) > code[class*="language-"] {
+    padding: 0.2em;
+    border-radius: 0.3em;
+    white-space: normal;
+}
+
+
+
+
+// PrismJS Syntax Highlighting
+::deep .token {
+    &.comment,
+    &.prolog,
+    &.doctype,
+    &.cdata {
+        color: var(--syntax-comment);
+    }
+
+    &.punctuation {
+        color: var(--syntax-punctuation);
+    }
+
+    &.namespace {
+        opacity: 0.7;
+    }
+
+    &.property,
+    &.tag,
+    &.boolean,
+    &.number,
+    &.constant,
+    &.uri,
+    &.suri,
+    &.symbol {
+        color: var(--syntax-number);
+    }
+
+    &.string,
+    &.char,
+    &.builtin {
+        color: var(--syntax-string);
+    }
+
+    &.operator,
+    &.entity,
+    &.url,
+    .language-css &.string,
+    &.variable,
+    &.inserted {
+        color: var(--syntax-variable);
+    }
+
+    &.atrule,
+    &.attr-value,
+    &.keyword {
+        color: var(--syntax-keyword);
+    }
+
+    &.regex,
+    &.important {
+        color: orange;
+    }
+
+    &.important,
+    &.bold {
+        font-weight: bold;
+    }
+
+    &.italic {
+        font-style: italic;
+    }
+
+    &.deleted {
+        color: red;
+    }
+}
+
+// Plugin Styles: Diff Highlight
+pre.diff-highlight.diff-highlight > code .token.deleted:not(.prefix),
+pre > code.diff-highlight.diff-highlight .token.deleted:not(.prefix) {
+    background-color: rgba(255, 0, 0, 0.3);
+    display: inline;
+}
+
+pre.diff-highlight.diff-highlight > code .token.inserted:not(.prefix),
+pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
+    background-color: rgba(0, 255, 128, 0.3);
+    display: inline;
+}

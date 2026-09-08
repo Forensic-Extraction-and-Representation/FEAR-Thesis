@@ -1,0 +1,49 @@
+// Defines a ruleset with a type and unique path name
+define ruleset("TSK_METADATA", "Autopsy/Metadata");
+
+// Provides prefixes for ontologies used in the ruleset
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://inferred-knowledge.fear.graph", "fik");
+
+// Core reference ontology prefixes used in the ruleset
+include xsd;
+
+// Defines a rule to detect suspicious actions based on metadata properties
+observed timestompedMetadata with {
+    aut:Metadata(?A) ^ 
+    aut:modifiedDateTime(?A,?mDate) ^ aut:createdDateTime(?A,?crDate) ^
+    swrlb:lessThan(?mDate,?crDate)
+    -> fik:suspiciousAction(?A,"Timestomped")
+};
+
+// Defines a rule to detect suspicious actions based on recent document properties
+observed timestompedRecentDocument with {
+    aut:RecentDocument(?A) ^ 
+    aut:modifiedDateTime(?A,?mDate) ^ aut:createdDateTime(?A,?crDate) ^
+    swrlb:lessThan(?mDate,?crDate)
+    -> fik:suspiciousAction(?A,"Timestomped")
+};
+
+// Defines a SWRL rule that infers that two files are the same file, with one being created earlier than the other
+observed sameFileCreatedEarlier with {
+    aut:Metadata(?A) ^ aut:Metadata(?B) ^ 
+    aut:sourceFileMd5(?A,?hash) ^ aut:sourceFileMd5(?B,?hash)  ^
+    aut:createdDateTime(?A,?dateA) ^ aut:createdDateTime(?B,?dateB) ^
+    swrlb:lessThan(?dateA,?dateB) 
+    -> fik:sameFileCreatedEarlier(?A,?B)
+};
+
+// Defines a SWRL rules that infers a file has been transferred between hosts, based on the same file being created on two different hosts
+derived fileTransferredBetweenHosts with {
+    fik:sameFileCreatedEarlier(?A,?B) ^ aut:host(?A) ^ aut:host(?B) -> fik:fileTransferredBetweenHosts(?A,?B)
+} depends on sameFileCreatedEarlier;
+
+// Defines a SWRL rule that infers a host has communicated with a suspicious IP, based on the host communicating with an IP that has a threat reputation
+derived hostCommunicatedWithSuspiciousIP with {
+    aut:host(?A) ^ aut:ip(?ip) ^ aut:hasThreatReputation(?ip,?reputation) ^ swrlb:greaterThan(?reputation, 0.5) -> fik:hostCommunicatedWithSuspiciousIP(?A,?ip)
+};
+
+// Defines a SWRL rule that infers a potential lateral movement, based on the file being transferred between hosts and both hosts communicating with a suspicious IP
+derived potentialLateralMovement with {
+    fik:fileTransferredBetweenHosts(?A,?B) ^ fik:hostCommunicatedWithSuspiciousIP(?A,?ip) ^ fik:hostCommunicatedWithSuspiciousIP(?B,?ip) -> fik:potentialLateralMovement(?A,?B)
+} depends on sameFileCreatedEarlier, fileTransferredBetweenHosts, hostCommunicatedWithSuspiciousIP;

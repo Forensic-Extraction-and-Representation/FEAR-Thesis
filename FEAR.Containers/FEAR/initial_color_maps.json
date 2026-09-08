@@ -1,0 +1,178 @@
+{
+  "ColorMapSetId": "7de74faa-f8c8-45f2-9c29-7bf96c2fd059",
+  "Name": "System",
+  "Color": "Map",
+  "EntityDiscriminator": 0,
+  "EntityId": "00000000-0000-0000-0000-000000000000",
+  "ColorMaps": [
+    {
+      "Layer": 0,
+      "Name": "autopsy",
+      "Description": "Autopsy Ontology",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "autopsy",
+      "Ontology": "https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "#f9b605",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "#f9b605",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    },
+    {
+      "Layer": 0,
+      "Name": "fik",
+      "Description": "Inferred Knowledge",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "fik",
+      "Ontology": "http://inferred-knowledge.fear.graph/",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "rgba(154,5,208,1)",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "rgba(154,5,208,1)",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    },
+    {
+      "Layer": 0,
+      "Name": "vt",
+      "Description": "VirusTotal",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "vt",
+      "Ontology": "https://ontology.fear.graph/virustotal/",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "rgba(11,77,218,1)",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "rgba(11,77,218,1)",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    },
+    {
+      "Layer": 0,
+      "Name": "rdf",
+      "Description": "RDF Entities",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "rdf",
+      "Ontology": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "rgba(7,244,46,1)",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "rgba(7,244,46,1)",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    },
+    {
+      "Layer": 0,
+      "Name": "fo",
+      "Description": "Fear Ontologies",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "fo",
+      "Ontology": "https://ontology.fear.graph/",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "rgba(239,30,30,1)",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "rgba(239,30,30,1)",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    },
+    {
+      "Layer": 0,
+      "Name": "inv",
+      "Description": "Investigation",
+      "SubjectValues": [],
+      "ObjectValues": [],
+      "Prefix": "inv",
+      "Ontology": "http://inv.fear.graph/",
+      "Styles": {
+        "Edge": {
+          "Width": "4px",
+          "LineColor": "rgba(20,136,90,1)",
+          "TargetArrowColor": "#999",
+          "CurveStyle": "bezier",
+          "FontSize": "12px"
+        },
+        "Node": {
+          "BackgroundColor": "rgba(20,136,90,1)",
+          "Shape": "round-octagon",
+          "TextValign": "center",
+          "TextHalign": "right",
+          "TextWrap": "wrap",
+          "TextOverflowWrap": "anywhere",
+          "TextMaxWidth": "140px",
+          "FontSize": "12px"
+        }
+      }
+    }
+  ],
+  "Description": "Default"
+}

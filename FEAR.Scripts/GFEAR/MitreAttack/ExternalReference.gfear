@@ -1,0 +1,19 @@
+define codifier("COLLECTED_MITRE_EXTERNAL_REFERENCE", "Collector/Mitre/AttackPattern");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("https://purl.org/ontology/mitre/", "ma");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(AttackPatternId, SourceName, ExternalId, Url);
+
+result AttackPattern <"/{AttackPatternId}"> as owl:Thing with {
+	create property ma:Id as xsd:string with AttackPatternId;
+	
+	create entity ExtRef as ma:ExternalReference with {
+		create property ma:ExternalId as xsd:string with ExternalId;
+		create property ma:Url as xsd:string with Url;
+	} identified by required ma:ExternalId;
+
+	create property ma:source_name as xsd:string with SourceName;
+	create property ma:related_to with entity ExtRef;
+} identified by required ma:Id;

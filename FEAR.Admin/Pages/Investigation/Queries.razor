@@ -1,0 +1,77 @@
+﻿@page "/Queries/"
+@inherits FEAR.Blazor.Shared.Components.DataGridComponentBase<FEAR.Domain.Model.InvestigationStore.InvestigationInfo>
+@using FEAR.Admin.Services.Management
+@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using FEAR.Host.Domain.Api.Investigation
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper>
+            <MudText Typo="Typo.h6">Investigations</MudText>
+            <MudSpacer />
+            @if (Items != null)
+            {
+                <MudDataGrid T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" MultiSelection=false Items="Items" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilters"
+                             Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+                    <ToolBarContent>
+                        <MudTooltip Text="Create OIDC Application">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateInvestigation">
+                                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
+                            </MudButton>
+                        </MudTooltip>
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" />
+                        <PropertyColumn Property="x => x.CaseNumber" Title="Case Number" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.Name" Title="Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseType" Title="Case Type" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseStatus" Title="Case Status" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseDate" Title="Case Date" Sortable="true" Filterable="true" />
+                       
+                        <TemplateColumn Title="Actions" T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo">
+                            <CellTemplate>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => EditInvestigation(context.Item)">Queries</MudButton>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" />
+                    </PagerContent>
+
+                </MudDataGrid>
+            }
+            else
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        <MudText>Loading investigations...</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" @ref="editorDialog" OnSave="SaveInvestigation" OnClose="LoadInvestigations">
+    <HeaderTemplate Context="headerCtx">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((headerCtx.InvestigationId == null) ? "Create Investigation" : "Edit Investigation")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate>
+        <MudTextField @bind-Value="context.Name" Label="Case Name" Required="false" For="@(() => context.Name)" Immediate="true" />
+        <MudTextField @bind-Value="context.Description" Label="Case Number" Required="false" For="@(() => context.CaseNumber)" Immediate="true" />
+        <MudTextField @bind-Value="context.CaseNumber" Label="Case Type" Required="false" For="@(() => context.CaseType)" Immediate="true" />
+        <MudSelect T="string" Label="Case Status" @bind-Value="context.CaseStatus" Required="true">
+            <MudSelectItem Value=@("open")>Open</MudSelectItem>
+            <MudSelectItem Value=@("closed")>Closed</MudSelectItem>
+        </MudSelect>
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+@code {
+}
+

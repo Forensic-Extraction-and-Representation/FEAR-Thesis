@@ -1,0 +1,61 @@
+﻿@page
+@model FEAR.Hosted.Pages.Cases.IndexModel
+@{
+}
+
+@{
+    ViewData["Title"] = "Cases";
+}
+
+
+<div accesskey="$0" class="container">
+    <h2>Cases</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <a asp-page="/Cases/Create" class="btn btn-primary">Create New</a>
+        </div>
+    </div>
+    <br />
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cases[0].InvestigationId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Cases[0].Name)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Cases)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.InvestigationId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-page="./Edit" asp-route-investigationId="@item.InvestigationId">Edit</a></li>
+                                <li><a class="dropdown-item" asp-page="./Configure" asp-route-investigationId="@item.InvestigationId">Details</a></li>
+                                <li><a class="dropdown-item" asp-page="./Queries" asp-route-investigationId="@item.InvestigationId">Queries</a></li>
+                                <li><a class="dropdown-item text-danger" asp-page="./Delete" asp-route-investigationId="@item.InvestigationId">Delete</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+@if (Model.Cases.Count == 0)
+{
+        <p>No cases found.</p>
+}

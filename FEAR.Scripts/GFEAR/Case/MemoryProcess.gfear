@@ -1,0 +1,37 @@
+define codifier("MemProcFS+ProcessView", "GraphCodify/CaseOntology/Memory/ProcessView");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+
+accepts(PID, PPID, UserPath, CreateTime);
+result process as uco-observable:Process with {
+    create property uco-observable:startTime as xsd:DateTime with CreateTime;
+    
+    create entity exeFile as uco-observable:File with {
+        create entity exeFileFacet as uco-observable:FileFacet with {
+            create property uco-observable:filePath as xsd:string with UserPath;  
+        } identified by required uco-observable:filePath;
+
+        create property uco-core:hasFacet with entity exeFileFacet;
+	} identified by required entity uco-core:hasFacet exeFileFacet;
+
+    create property prov:wasDerivedFrom with entity exeFile;
+        
+    create entity processFacet as uco-observable:ProcessFacet with {
+		create property uco-observable:pid as xsd:integer with PID;
+	} identified by required uco-observable:pid;
+    create property uco-core:hasFacet with entity processFacet;
+
+    create entity parentProcess as uco-observable:Process with {
+        create entity parentProcessFacet as uco-observable:ProcessFacet with {
+			create property uco-observable:pid as xsd:integer with PPID;
+		} identified by required uco-observable:pid;
+        create property uco-core:hasFacet with entity parentProcessFacet;
+	} identified by required entity uco-core:hasFacet parentProcessFacet;
+
+    create property uco-observable:parent with entity parentProcess;
+} identified by required entity uco-core:hasFacet processFacet;

@@ -1,0 +1,58 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Directories", Icons.Material.Filled.FolderCopy)]
+
+<MudText Typo="Typo.h5" Class="mb-4"> Directories</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        Configure the directories that will be used for the case.
+    </MudText>
+
+    <MudText Class="mb-4">
+        The Working Directory is the directory for the case where files will be stored.<br />
+        If this is a relative path, the case root directory on the server will be used as the base path.
+    </MudText>
+
+    <MudTextField @bind-Value="Model.Configuration.WorkingDirectory"
+                  Label="Working Directory"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrWhiteSpace(Model.Configuration.WorkingDirectory) ? "Working Directory is required." : null)"
+                  Immediate="true" />
+
+    <MudText Class="mb-4">
+        The Script Directory is where scripts will be stored when synchronized by the Repository Manager.<br />
+        If this is a relative path, the case Working Directory will be used as the base path.
+    </MudText>
+    <MudTextField @bind-Value="Model.Configuration.ScriptDirectoryOption"
+                  Label="Script Directory"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrWhiteSpace(Model.Configuration.ScriptDirectoryOption) ? "Script Directory is required." : null)"
+                  Immediate="true" />
+
+    <MudText Class="mb-4">
+        The Package Directory is where packages will be stored when synchronized to the server by the Repository Manager.<br />
+        If this is a relative path, the case Working Directory will be used as the base path.
+    </MudText>
+    <MudTextField @bind-Value="Model.Configuration.PackageDirectoryOption"
+                  Label="Package Directory"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrWhiteSpace(Model.Configuration.PackageDirectoryOption) ? "Package Directory is required." : null)"
+                  Immediate="true" />
+    
+    <MudText Class="mb-4">
+        The Pre-Compiled Directory is where pre-compiled libraries will be stored when synchronized to the server by the Repository Manager.<br />
+        If this is a relative path, the case Working Directory will be used as the base path.
+    </MudText>
+    <MudTextField @bind-Value="Model.Configuration.PreCompiledDirectoryOption"
+                  Label="Pre-Compiled Directory"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrWhiteSpace(Model.Configuration.PreCompiledDirectoryOption) ? "Pre-Compiled Directory is required." : null)"
+                  Immediate="true" />
+
+</MudForm>

@@ -1,0 +1,51 @@
+define codifier("NetworkConnection", "GraphCodify/CaseOntology/NetworkConnection");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+ontology("http://www.w3.org/ns/prov#", "prov");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+prefix("uco-action", "uco:action");
+
+accepts(PID, Connections);
+result prefetch as uco-observable:Process  with {
+    create entity processFacet as uco-observable:ProcessFacet with {
+		create property uco-observable:pid with PID;
+		
+		create collection networkConnections as rdf:Bag of uco-observable:NetworkConnection;
+		foreach connection in Connections {
+			create entity networkConnection as uco-observable:NetworkConnection with {
+				create entity networkConnectionFacet as uco-observable:NetworkConnectionFacet with {
+					create entity localIpAddress as uco-observable:IPAddress with {
+						create entity localIpAddressFacet as uco-observable:IPAddressFacet with {
+							create property uco-observable:addressValue as xsd:string with connection.Src.IPAddress;
+						} identified by required uco-observable:addressValue;
+						create property uco-core:hasFacet with entity localIpAddressFacet;
+					} identified by required entity uco-core:hasFacet localIpAddressFacet;
+					create property uco-observable:sourcePort as xsd:integer with connection.Src.Port;
+
+					create entity remoteIpAddress as uco-observable:IPAddress with {
+						create entity remoteIpAddressFacet as uco-observable:IPAddressFacet with {
+							create property uco-observable:addressValue as xsd:string with connection.Dst.IPAddress;
+						} identified by required uco-observable:addressValue;
+						create property uco-core:hasFacet with entity remoteIpAddressFacet;
+					} identified by required entity uco-core:hasFacet remoteIpAddressFacet;
+					create property uco-observable:destinationPort as xsd:integer with connection.Dst.Port;
+
+					create property uco-observable:localAddress with entity localIpAddress;
+					create property uco-observable:remoteAddress with entity remoteIpAddress;
+				} identified by required entity uco-observable:localAddress localIpAddress, required uco-observable:sourcePort;
+
+				create property uco-core:hasFacet with entity networkConnectionFacet;
+			} identified by required entity uco-core:hasFacet networkConnectionFacet;
+			
+			append entity networkConnection to networkConnections;
+		}
+	
+		create property prov:wasDerivedFrom with collection networkConnections;
+	} identified by required uco-observable:pid;
+
+    create property uco-core:hasFacet with entity processFacet;
+} identified by required entity uco-core:hasFacet processFacet;

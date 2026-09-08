@@ -1,0 +1,80 @@
+﻿<div class="modal fade" id="shared-queries-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Shared Queries</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="p-3 mt-0" id="query-list-container">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Query Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="query-list">
+                                <!-- Query list will be populated here -->
+                                @if (Queries == null || !Queries.Any())
+                                {
+                                    <tr>
+                                        <td colspan="2" class="text-center">No shared queries available.</td>
+                                    </tr>
+                                }
+                                else
+                                    @foreach (var query in Queries)
+                                    {
+                                        <tr>
+                                            <td>@query.Name</td>
+                                            <td>
+                                                <button class="btn btn-primary" @onclick="() => this.LoadQuery(query.InvestigationQueryId)">Load</button>
+                                                <button class="btn btn-secondary" @onclick="() => this.RunQuery(query.InvestigationQueryId)">Run</button>
+                                            </td>
+                                        </tr>
+                                    }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Inject] QueryService QueryService { get; set; }
+    [Inject] IEventAggregator Mediator { get; set; }
+    [Inject] IJSRuntime JSRuntime { get; set; }
+
+    private IEnumerable<FEAR.Domain.Dto.InvestigationStore.InvestigationQuery> Queries { get; set; } = new List<FEAR.Domain.Dto.InvestigationStore.InvestigationQuery>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to the event that triggers the modal display
+        Queries = await QueryService.GetSharedQueriesAsync();
+        StateHasChanged();
+    }
+
+    private void LoadQuery(Guid queryId)
+    {
+        var query = Queries.FirstOrDefault(q => q.InvestigationQueryId == queryId);
+        JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('shared-queries-modal')).hide()");
+        Mediator.PublishAsync(new UpdateQueryEvent(query.QueryText));
+    }
+
+    private void RunQuery(Guid queryId)
+    {
+        var query = Queries.FirstOrDefault(q => q.InvestigationQueryId == queryId);
+        JSRuntime.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('shared-queries-modal')).hide()");
+        Mediator.PublishAsync(new SendSessionEvent("query", query.QueryText));
+        Mediator.PublishAsync(new GenericUIEvent(GenericUIEventConstants.HIDE_OMNIBAR));
+    }
+}

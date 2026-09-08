@@ -1,0 +1,7 @@
+1. Clone the ontology and ensure that it is built.
+   For UCO and CASE this required a clone, and a 'make all' to ensure all ttl files are present
+
+2. Using ontospy, run the serializer over the directory of the ontology, and output the console to an RDF file.
+
+ontospy ser ../CASE/ontology/ --verbose -f xml > case.rdf
+ontospy ser ../UCO/ontology/ --verbose -f xml > uco.rdf

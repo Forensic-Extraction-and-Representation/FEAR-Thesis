@@ -1,0 +1,9 @@
+{
+  "Local": {
+    "Authority": "<Replaced>",
+    "ClientId": "service-worker",
+    "PostLogoutRedirectUri": "https://api.fear.local/authentication/logout-callback",
+    "RedirectUri": "https://api.fear.local/authentication/login-callback",
+    "ResponseType": "code"
+  }
+}

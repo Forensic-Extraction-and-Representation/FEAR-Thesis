@@ -1,0 +1,23 @@
+﻿<MudPaper Class="py-3" Elevation="0">
+    <MudNavMenu>
+        <div class="d-flex align-center px-4 mb-2">
+            <MudImage Src="images/FEAR-Logo.png" Alt="FEAR Logo" Width="30" Height="30" Class="mr-3"/>
+            <MudText Typo="Typo.h6">FEAR Admin</MudText>
+        </div>
+        <MudText Typo="Typo.caption" Class="px-4 mud-text-secondary">System Administration</MudText>
+        <MudDivider Class="my-2" />
+
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Href="investigations" Icon="@Icons.Material.Filled.ManageSearch">Investigations</MudNavLink>
+
+        <MudNavGroup Title="Identity" Icon="@Icons.Material.Filled.Security" Expanded="true">
+            <MudNavLink Href="users" Icon="@Icons.Material.Filled.Person">Users</MudNavLink>
+            <MudNavLink Href="roles" Icon="@Icons.Material.Filled.Groups">Roles</MudNavLink>
+             <MudNavLink Href="Oidc" Icon="@Icons.Material.Filled.Key">OpenID Connect</MudNavLink>
+        </MudNavGroup>
+
+        <MudNavGroup Title="System" Icon="@Icons.Material.Filled.Settings" Expanded="true">
+             <MudNavLink Href="system-colormap" Icon="@Icons.Material.Filled.Palette">Color Map</MudNavLink>
+        </MudNavGroup>
+    </MudNavMenu>
+</MudPaper>

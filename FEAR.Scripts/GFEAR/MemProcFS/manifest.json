@@ -1,0 +1,19 @@
+{
+  "Ontology": "https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#",
+  "Version": "1.0.0",
+  "Files": [
+    "Account.gfear",
+    "EmaiilMessage.gfear",
+    "ExtensionMismatch.gfear",
+    "InstalledProgram.gfear",
+    "Metadata.gfear",
+    "OperatingSystemInformation.gfear",
+    "RecentDocument.gfear",
+    "RecycleBin.gfear",
+    "USBDeviceAttached.gfear",
+    "WebBookmark.gfear",
+    "WebCookie.gfear",
+    "WebHistory.gfear",
+    "WebSearch.gfear"
+  ]
+}

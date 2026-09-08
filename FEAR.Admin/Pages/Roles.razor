@@ -1,0 +1,181 @@
+@page "/roles"
+@using FEAR.Admin.Services.Management
+@using FEAR.Host.Domain.Api.Management.Security
+@using FEAR.Domain.Model.Authentication
+@inject RoleService RoleService
+@using MudBlazor
+@attribute [Authorize]
+
+<MudStack Spacing="2">
+    <!-- Roles Section -->
+    <MudPaper Class="pa-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Roles</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenNewRoleDialog">
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-1" /> New Role
+            </MudButton>
+        </MudStack>
+        <MudTable Items="roles" Dense="true" Hover="true" T="Role" OnRowClick="OnRoleRowClick" Class="mt-2">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+
+    <!-- Permission Sets Section -->
+    <MudPaper Class="pa-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+            <MudText Typo="Typo.h6">Permission Sets</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenNewPermissionSetDialog">
+                <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-1" /> New Permission Set
+            </MudButton>
+        </MudStack>
+        <MudTable Items="permissionSets" Dense="true" Hover="true" T="PermissionSet" OnRowClick="OnPermissionSetRowClick" Class="mt-2">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</MudStack>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="RoleEditorModel" @ref="roleDialog" OnSave="SaveRoleAsync">
+    <HeaderTemplate Context="hdr">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((hdr.RoleId == Guid.Empty) ? "Create Role" : $"Edit Role: {hdr.Name}")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate Context="ctx">
+        <MudTextField @bind-Value="ctx.Name" Label="Role Name" />
+        <MudText Typo="Typo.subtitle2" Class="mt-2">Assign Permission Sets</MudText>
+        <MudSelect T="Guid" MultiSelection="true" @bind-SelectedValues="ctx.PermissionSetIds" Dense="true" FullWidth="true">
+            @foreach (var ps in permissionSets)
+            {
+                <MudSelectItem T="Guid" Value="@ps.PermissionSetId">@ps.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="PermissionSetEditorModel" @ref="permissionSetDialog" OnSave="SavePermissionSetAsync">
+    <HeaderTemplate Context="hdr">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((hdr.PermissionSetId == Guid.Empty) ? "Create Permission Set" : $"Edit Permission Set: {hdr.Name}")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate Context="ctx">
+        <MudTextField @bind-Value="ctx.Name" Label="Permission Set Name" />
+        <FEAR.Blazor.Shared.Components.Security.PermissionEditor
+            AllActions="systemActionOptions"
+            @bind-ApprovedActionIds="ctx.ApprovedActionIds"
+            @bind-DeniedActionIds="ctx.DeniedActionIds" />
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+@code {
+    private List<Role> roles = new();
+    private List<PermissionSet> permissionSets = new();
+    private List<SystemAction> systemActions = new();
+    private List<FEAR.Blazor.Shared.Components.Security.PermissionActionOption> systemActionOptions = new();
+
+    private FEAR.Blazor.Shared.Components.EditorDialog<RoleEditorModel> roleDialog;
+    private FEAR.Blazor.Shared.Components.EditorDialog<PermissionSetEditorModel> permissionSetDialog;
+
+    private record RoleEditorModel
+    {
+        public Guid RoleId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public IEnumerable<Guid> PermissionSetIds { get; set; } = Enumerable.Empty<Guid>();
+    }
+
+    private record PermissionSetEditorModel
+    {
+        public Guid PermissionSetId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public IEnumerable<Guid> ApprovedActionIds { get; set; } = Enumerable.Empty<Guid>();
+        public IEnumerable<Guid> DeniedActionIds { get; set; } = Enumerable.Empty<Guid>();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var r = await RoleService.QueryRolesAsync(new QueryRoles.Request());
+        roles = r.Results.ToList();
+        var ps = await RoleService.QueryPermissionSetsAsync(new QueryPermissionSets.Request());
+        permissionSets = ps.Results.ToList();
+        var sa = await RoleService.QuerySystemActionsAsync(new QuerySystemActions.Request());
+        systemActions = sa.Results.ToList();
+        systemActionOptions = systemActions.Select(a => new FEAR.Blazor.Shared.Components.Security.PermissionActionOption { Id = a.SystemActionId, Name = a.Name }).ToList();
+    }
+
+    private void OnRoleRowClick(TableRowClickEventArgs<Role> e)
+    {
+        var model = new RoleEditorModel
+        {
+            RoleId = e.Item.RoleId,
+            Name = e.Item.Name,
+            PermissionSetIds = e.Item.Permissions?.Select(p => p.PermissionSetId) ?? Enumerable.Empty<Guid>()
+        };
+        roleDialog.BeginEdit(model);
+    }
+
+    private void OpenNewRoleDialog()
+    {
+        roleDialog.BeginEdit(new RoleEditorModel());
+    }
+
+    private async Task SaveRoleAsync(RoleEditorModel model)
+    {
+        if (model.RoleId == Guid.Empty)
+        {
+            await RoleService.CreateRoleAsync(new CreateRole.Request { Name = model.Name, PermissionSetIds = model.PermissionSetIds.ToList() });
+        }
+        else
+        {
+            await RoleService.UpdateRoleAsync(new UpdateRole.Request { RoleId = model.RoleId, Name = model.Name, PermissionSetIds = model.PermissionSetIds.ToList() });
+        }
+        await LoadAsync();
+    }
+
+    private void OnPermissionSetRowClick(TableRowClickEventArgs<PermissionSet> e)
+    {
+        var model = new PermissionSetEditorModel
+        {
+            PermissionSetId = e.Item.PermissionSetId,
+            Name = e.Item.Name,
+            ApprovedActionIds = e.Item.ApprovedActions?.Select(a => a.SystemActionId) ?? Enumerable.Empty<Guid>(),
+            DeniedActionIds = e.Item.DeniedActions?.Select(a => a.SystemActionId) ?? Enumerable.Empty<Guid>()
+        };
+        permissionSetDialog.BeginEdit(model);
+    }
+
+    private void OpenNewPermissionSetDialog()
+    {
+        var model = new PermissionSetEditorModel();
+        permissionSetDialog.BeginEdit(model);
+    }
+
+    private async Task SavePermissionSetAsync(PermissionSetEditorModel model)
+    {
+        if (model.PermissionSetId == Guid.Empty)
+        {
+            await RoleService.CreatePermissionSetAsync(new CreatePermissionSet.Request { Name = model.Name, ApprovedActionIds = model.ApprovedActionIds.ToList(), DeniedActionIds = model.DeniedActionIds.ToList() });
+        }
+        else
+        {
+            await RoleService.UpdatePermissionSetAsync(new UpdatePermissionSet.Request { PermissionSetId = model.PermissionSetId, Name = model.Name, ApprovedActionIds = model.ApprovedActionIds.ToList(), DeniedActionIds = model.DeniedActionIds.ToList() });
+        }
+        await LoadAsync();
+    }
+}

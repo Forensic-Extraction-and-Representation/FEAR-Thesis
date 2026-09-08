@@ -1,0 +1,177 @@
+﻿@using BlazorJS
+@using FEAR.Blazor.Shared.Components.Wizards
+@using FEAR.Host.Domain.Api.Investigation
+@using MudBlazor
+@using System.Text.Json
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Graph Settings", Icons.Material.Filled.Grain)]
+
+<MudText Typo="Typo.h5" Class="mb-4"> Graph Settings</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        Configure the graph settings for the case.
+    </MudText>
+
+    <MudText Class="mb-4">
+    </MudText>
+
+    <MudTextField @bind-Value="Model.Configuration.NamespaceOption"
+                  Label="Namespace"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrEmpty(Model.Configuration.NamespaceOption) ? "Namespace is required." : null)"
+                  Immediate="true" />
+
+    <MudText Class="mb-4">
+    </MudText>
+    <MudTextField @bind-Value="Model.Configuration.NamespaceAbbrevOption"
+                  Label="Namespace Abbreviation"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Validation="@(() => string.IsNullOrEmpty(Model.Configuration.NamespaceAbbrevOption) ? "Namespace Abbreviation is required." : null)"
+                  Immediate="true" />
+
+    <MudPaper Class="my-4" Style="background-color: var(--mud-palette-background-default);">
+        @GetOwlNamespaceDefinition()
+    </MudPaper>
+    
+    <MudSelect T="string"
+               @bind-Value="Model.Configuration.FindEntityStrategyFactory.Local"
+               Label="Select the strategy for finding existing entities in the graph when adding new information"
+               Validation="@(() => Model.Configuration.FindEntityStrategyFactory.Local == null ? "Local Graph Find Entity Strategy is required." : null)"
+               Variant="Variant.Outlined"
+               FullWidth="true"
+               Margin="Margin.Dense"
+               Immediate="true">
+        @foreach (var strategy in localGraphFindEntitiesStrategyFactories.FieldOptions)
+        {
+            <MudSelectItem Value="@strategy.Name">@strategy.Value</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudCheckBox @bind-Value="Model.Configuration.GraphManager.RemoteGraph"
+                 Label="Will the graph be stored on a remote Graph Database?"
+                 Variant="Variant.Outlined"
+                 Margin="Margin.Dense"
+                 Immediate="true" />
+    
+    @if (Model.Configuration.GraphManager.RemoteGraph)
+    {
+        <MudSelect T="string"
+                   Required="@Model.Configuration.GraphManager.RemoteGraph"
+                   @bind-Value="Model.Configuration.FindEntityStrategyFactory.Remote"
+                   Validation="@(() => Model.Configuration.GraphManager.RemoteGraph && string.IsNullOrEmpty(Model.Configuration.FindEntityStrategyFactory.Remote) ? "Remote Graph Find Entity Strategy is required." : null)"
+                   Label="Select the strategy for finding existing entities in the remote graph when adding new information"
+                   Variant="Variant.Outlined"
+                   FullWidth="true"
+                   Margin="Margin.Dense"
+                   Immediate="true">
+            @foreach (var strategy in remoteGraphFindEntitiesStrategyFactories.FieldOptions)
+            {
+                <MudSelectItem Value="@strategy.Name">@strategy.Value</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSelect T="string"
+                   Required="@Model.Configuration.GraphManager.RemoteGraph"
+                   @bind-Value="Model.Configuration.GraphManager.RemoteGraphSetupProvider"
+                   Label="Select the provider for setting up the graph database connection when the case is started."
+                   Validation="@(() => Model.Configuration.GraphManager.RemoteGraph && string.IsNullOrEmpty(Model.Configuration.GraphManager.RemoteGraphSetupProvider) ? "Remote Graph Setup Provider is required." : null)"
+                   Variant="Variant.Outlined"
+                   FullWidth="true"
+                   Margin="Margin.Dense"
+                   Immediate="true">
+            @foreach (var strategy in remoteGraphProviders.FieldOptions)
+            {
+                <MudSelectItem Value="@strategy.Name">@strategy.Value</MudSelectItem>
+            }
+        </MudSelect>
+             
+        <MudTextField T="string"
+                      Required="@Model.Configuration.GraphManager.RemoteGraph"
+                      Value="@(Model.Configuration.Connections.GraphDBConnection["Endpoint"].ToString())"
+                      ValueChanged="@(value => Model.Configuration.Connections.GraphDBConnection["Endpoint"] = value)"
+                      Validation="@(() => Model.Configuration.GraphManager.RemoteGraph && string.IsNullOrWhiteSpace(Model.Configuration.Connections.GraphDBConnection["Endpoint"]?.ToString()) ? "The Remote Graph Endpoint is required." : null)"
+                      Label="Remote Graph Endpoint"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+        
+        <MudCheckBox T="bool?"
+                     Value="@((bool?)Model.Configuration.Connections.GraphDBConnection["Authentication"])"
+                     ValueChanged="@(value => Model.Configuration.Connections.GraphDBConnection["Authentication"] = value ?? false)"
+                     Validation="@(() => (Model.Configuration.GraphManager.RemoteGraph && Model.Configuration.Connections.GraphDBConnection["Authentication"] == null) ? "Authentication is required." : null)"
+                     Label="Use Authentication"
+                     Variant="Variant.Outlined"
+                     Margin="Margin.Dense"
+                     Immediate="true" />
+        
+        @if (Model.Configuration.Connections.GraphDBConnection.TryGetValue("Authentication", out var authValue) && authValue is bool useAuth && useAuth)
+        {
+            <MudTextField T="string"
+                          Label="Username"
+                          Required="@(Model.Configuration.GraphManager.RemoteGraph && useAuth)"
+                          Value="@(Model.Configuration.Connections.GraphDBConnection["Username"].ToString())"
+                          ValueChanged="@(value => Model.Configuration.Connections.GraphDBConnection["Username"]=value)"
+                          Validation="@(() => Model.Configuration.GraphManager.RemoteGraph && useAuth && string.IsNullOrWhiteSpace(Model.Configuration.Connections.GraphDBConnection["Username"].ToString()) ? "Username is required." : null)"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true" />
+            <MudTextField T="string"
+                          Label="Password"
+                          Required="@(Model.Configuration.GraphManager.RemoteGraph && useAuth)"
+                          Value="@(Model.Configuration.Connections.GraphDBConnection["Password"].ToString())"
+                          ValueChanged="@(value => Model.Configuration.Connections.GraphDBConnection["Password"]=value)"
+                          Validation="@(() => Model.Configuration.GraphManager.RemoteGraph && useAuth && string.IsNullOrWhiteSpace(Model.Configuration.Connections.GraphDBConnection["Password"].ToString()) ? "Password is required." : null)"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          InputType="InputType.Password" />
+        }
+    }
+    
+</MudForm>
+
+@code {
+
+    private ConfigurationField localGraphFindEntitiesStrategyFactories = default!;
+    private ConfigurationField remoteGraphFindEntitiesStrategyFactories = default!;
+    private ConfigurationField remoteGraphProviders = default!;
+
+    protected override void OnInitialized()
+    {
+        localGraphFindEntitiesStrategyFactories = Wizard.GetFieldOptions("LocalFindEntityStrategyFactories");
+        remoteGraphFindEntitiesStrategyFactories = Wizard.GetFieldOptions("RemoteFindEntityStrategyFactories");
+        remoteGraphProviders = Wizard.GetFieldOptions("GraphSetupProviders");
+        
+        if (!Model.Configuration.Connections.GraphDBConnection.ContainsKey("Authentication") || Model.Configuration.Connections.GraphDBConnection["Authentication"] == null)
+        {
+            Model.Configuration.Connections.GraphDBConnection["Authentication"] = false;
+        }
+
+        if (!Model.Configuration.Connections.GraphDBConnection.ContainsKey("Endpoint") || Model.Configuration.Connections.GraphDBConnection["Endpoint"] == null)
+        {
+            Model.Configuration.Connections.GraphDBConnection["Endpoint"] = "";
+        }
+        if (!Model.Configuration.Connections.GraphDBConnection.ContainsKey("Username") || Model.Configuration.Connections.GraphDBConnection["Username"] == null)
+        {
+            Model.Configuration.Connections.GraphDBConnection["Username"] = "";
+        }
+
+        if (!Model.Configuration.Connections.GraphDBConnection.ContainsKey("Password") || Model.Configuration.Connections.GraphDBConnection["Password"] == null)
+        {
+            Model.Configuration.Connections.GraphDBConnection["Password"] = "";
+        }
+        base.OnInitialized();
+    }
+
+    public string GetOwlNamespaceDefinition()
+    {
+        var ns = Model.Configuration.NamespaceOption;
+        var abbrev = Model.Configuration.NamespaceAbbrevOption;
+        if (string.IsNullOrWhiteSpace(ns) || string.IsNullOrWhiteSpace(abbrev))
+            return "Please enter both Namespace and Namespace Abbreviation to see the OWL definition.";
+        return $"@prefix {abbrev}: <{ns}> .";
+    }
+}

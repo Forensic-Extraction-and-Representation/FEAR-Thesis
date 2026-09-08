@@ -1,0 +1,31 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(WebUILayout)">
+                <Authorizing>
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f5f5f5;">
+                        <div style="text-align: center; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                            <p style="margin: 0; color: #666; font-size: 1.1rem;">Authorizing...</p>
+                        </div>
+                    </div>
+                </Authorizing>
+                <NotAuthorized>
+                    @if (context.User.Identity is not { IsAuthenticated: true })
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <p>You are not authorized to access this resource.</p>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(WebUILayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

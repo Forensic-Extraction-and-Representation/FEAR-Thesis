@@ -1,0 +1,19 @@
+﻿define codifier("TSK_RECYCLE_BIN", "DFIO/Autopsy/RecycleBin");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, Username, TimeDeleted);
+
+result RecycleBin as aut:RecycleBin with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:userName as xsd:string with Username;
+	create property aut:timeDeleted as xsd:dateTime with TimeDeleted;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:sourceFile, required aut:userName, required entity aut:sourceHost suspectHost;

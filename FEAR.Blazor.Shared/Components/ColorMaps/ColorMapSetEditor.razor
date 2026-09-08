@@ -1,0 +1,109 @@
+@using FEAR.Domain.Model.ColorMap
+@using FEAR.Blazor.Shared.Components.Forms
+@using MudBlazor
+@using MudBlazor.Extensions.Components
+
+@if (Set is not null)
+{
+	<MudStack Spacing="2">
+		<MudTextField ReadOnly=ReadOnly @bind-Value="Set.Name" Label="Name" FullWidth="true" />
+		<MudTextField ReadOnly=ReadOnly @bind-Value="Set.Description" Label="Description" FullWidth="true" />
+
+		<MudDivider />
+		<MudText Typo="Typo.subtitle2">Color Maps</MudText>
+		<MudStack>
+			@foreach (var map in Set.ColorMaps)
+			{
+				<MudPaper Class="pa-3 mb-2">
+					<MudStack Spacing="1">
+						<MudTextField ReadOnly=ReadOnly @bind-Value="map.Name" Label="Map Name" />
+						<MudTextField ReadOnly=ReadOnly @bind-Value="map.Description" Label="Description" />
+						<MudTextField ReadOnly=ReadOnly @bind-Value="map.Prefix" Label="Prefix" />
+						<MudTextField ReadOnly=ReadOnly T="string" Value="@map.Ontology?.ToString()" ValueChanged="(v => map.Ontology = string.IsNullOrWhiteSpace(v) ? null : new Uri(v))" Label="Ontology URI" />
+
+						<MudStack Row="true" Spacing="1">
+							<MudExColorPicker ShowToolbar="true" ReadOnly=ReadOnly Value=map.Styles.Node.BackgroundColor ValueChanged="(v => map.Styles.Node.BackgroundColor = v.ToString())" Style=@($"color: {map.Styles.Node.BackgroundColor}") Label="Node Background Color" />
+							<MudTextField ReadOnly=ReadOnly @bind-Value="map.Styles.Node.FontSize" Label="Node Font Size" />
+							<MudExColorPicker ShowToolbar="true" ReadOnly=ReadOnly Value=map.Styles.Edge.LineColor ValueChanged="(v => map.Styles.Edge.LineColor = v.ToString())" Style=@($"color: {map.Styles.Edge.LineColor}") Label="Edge Color" />
+							<MudTextField ReadOnly=ReadOnly @bind-Value="map.Styles.Edge.Width" Label="Edge Width" />
+						</MudStack>
+
+						<MudStack Row="true" Spacing="2">
+							<MudPaper Class="pa-2" Style="flex:1">
+								<MudText Typo="Typo.caption">Subject Values (URIs)</MudText>
+								@if (ReadOnly)
+								{
+									@foreach(var v in map.SubjectValues)
+									{
+										<MudText>@v</MudText>
+									}
+								}
+								else
+								{
+									<EditableList T="string" GetItems="(() => map.SubjectValues)" OnItemAdded="(v => { map.SubjectValues.Add(v); StateHasChanged(); })" OnItemDeleted="(v => { map.SubjectValues.Remove(v); StateHasChanged(); })" Label="Add URI" Placeholder="Enter URI..." />
+								}
+							</MudPaper>
+							<MudPaper Class="pa-2" Style="flex:1">
+								<MudText Typo="Typo.caption">Object Values (Literals)</MudText>
+								@if (ReadOnly)
+								{
+									@foreach (var v in map.ObjectValues)
+									{
+										<MudText>@v</MudText>
+									}
+								}
+								else
+								{
+									<EditableList T="string" GetItems="(() => map.ObjectValues)" OnItemAdded="(v => { map.ObjectValues.Add(v); StateHasChanged(); })" OnItemDeleted="(v => { map.ObjectValues.Remove(v); StateHasChanged(); })" Label="Add Literal" Placeholder="Enter value..." />
+								}
+
+							</MudPaper>
+						</MudStack>
+
+						@if (!ReadOnly)
+						{
+							<MudStack Row="true" Justify="Justify.FlexEnd">
+								<MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="(() => RemoveMap(map))">Remove</MudButton>
+							</MudStack>
+						}
+					</MudStack>
+				</MudPaper>
+			}
+
+			@if (!ReadOnly)
+			{
+				<MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="AddMap">Add Color Map</MudButton>
+			}
+		</MudStack>
+	</MudStack>
+}
+else
+{
+	<MudText>No Color Map Set loaded.</MudText>
+}
+
+@code {
+	[Parameter] public ColorMapSet Set { get; set; }
+	[Parameter] public bool ReadOnly { get; set; } = false;
+	private void AddMap()
+	{
+		Set.ColorMaps ??= new List<FEAR.Domain.Model.ColorMap.ColorMap>();
+		Set.ColorMaps.Add(new FEAR.Domain.Model.ColorMap.ColorMap
+		{
+			Name = "New Map",
+			Description = "",
+			Prefix = "",
+			Ontology = null,
+			Styles = new FEAR.Domain.Model.ColorMap.ColorMapStyle
+			{
+				Edge = new FEAR.Domain.Model.ColorMap.EdgeStyle("#999"),
+				Node = new FEAR.Domain.Model.ColorMap.NodeStyle("#999")
+			}
+		});
+	}
+
+	private void RemoveMap(FEAR.Domain.Model.ColorMap.ColorMap map)
+	{
+		Set.ColorMaps.Remove(map);
+	}
+}

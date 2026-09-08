@@ -1,0 +1,31 @@
+define codifier("WindowsUserAccount", "GraphCodify/CaseOntology/WindowsUserAccount");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+
+accepts(UID, SID, MID, Username, LastLogonTime, AccountExpiryTime, LastLoginFailureTime, FailedLogonCount, TotalLogonCount);
+result windowsAccount <"/Authority/{MID}/Users/{UID}"> as uco-observable:WindowsAccount with {
+    create entity digitalAccountFacet as uco-observable:DigitalAccountFacet with {
+        create property uco-observable:displayName as xsd:string with Username;
+        create property uco-observable:accountLogin as xsd:string with Username;
+        create property uco-observable:lastLoginTime as xsd:dateTime with LastLogonTime;
+    } identified by required uco-observable:displayName, required uco-observable:accountLogin, optional uco-observable:lastLoginTime;
+
+    create entity accountFacet as uco-observable:AccountFacet with {
+        create property uco-observable:accountIdentifier as xsd:string with SID;
+
+        create entity accountIssuer as uco-observable:AccountIssuer with {
+            create property uco-observable:accountIssuerName as xsd:string with MID;
+        } identified by required uco-observable:accountIssuerName;
+
+        create property uco-observable:accountIssuer with entity accountIssuer;
+    } identified by required uco-observable:accountIdentifier;
+
+    create property uco-core:hasFacet with entity digitalAccountFacet;
+    create property uco-core:hasFacet with entity accountFacet;
+
+} identified by required entity uco-core:hasFacet accountFacet, optional entity uco-core:hasFacet digitalAccountFacet;

@@ -1,0 +1,74 @@
+﻿@using FEAR.Blazor.Shared.Components.Forms
+@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Script Repositories", Icons.Material.Filled.Source)]
+
+<MudText Typo="Typo.h5" Class="mb-4"> Script Repositories</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        Script repositories are synchronized from a local or remote repository to the case Script directory for compilation.<br />
+    </MudText>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <MudText Class="mb-4">
+            Graph-Codify FEAR Script Repositories
+        </MudText>
+        <EditableList T="string"
+                      GetItems="@(() => gfearRepositories)"
+                      OnItemAdded="@(item => gfearRepositories.Add(item))"
+                      OnItemDeleted="@(item => gfearRepositories.Remove(item))"
+                      Label="GFEAR Script Repositories"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+    </MudPaper>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <MudText Class="mb-4">
+            Ruleset FEAR Script Repositories
+        </MudText>
+
+        <EditableList T="string"
+                      GetItems="@(() => rfearRepositories)"
+                      OnItemAdded="@(item => rfearRepositories.Add(item))"
+                      OnItemDeleted="@(item => rfearRepositories.Remove(item))"
+                      Label="RFEAR Script Repositories"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+    </MudPaper>
+    
+</MudForm>
+
+@code {
+
+    List<string> gfearRepositories = new List<string>();
+    List<string> rfearRepositories = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (Model.Configuration.Repositories.TryGetValue("GFEAR", out var repositories))
+        {
+            gfearRepositories = ((String[])repositories).ToList();
+        }
+        if (Model.Configuration.Repositories.TryGetValue("RFEAR", out var rRepositories))
+        {
+            rfearRepositories = ((String[])rRepositories).ToList();
+        }
+    }
+
+    public override void OnWizardStepChanging()
+    {
+        Model.Configuration.Repositories["GFEAR"] = gfearRepositories.ToArray();
+        Model.Configuration.Repositories["RFEAR"] = rfearRepositories.ToArray();
+        base.OnWizardStepChanging();
+    }
+
+    public override Task<bool> IsValidAsync()
+    {
+        return Task.FromResult(true);
+    }
+}

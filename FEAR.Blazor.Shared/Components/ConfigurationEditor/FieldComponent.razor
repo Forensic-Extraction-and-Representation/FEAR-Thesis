@@ -1,0 +1,43 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using MudBlazor
+
+@switch (Field.Type)
+{
+    case FieldTypeEnum.String:
+        <MudTextField @bind-Value="InputString" Label="@Field.DisplayName" Placeholder="@Field.Placeholder" Variant="Variant.Text" FullWidth="true" Immediate="false" HelperText="@Field.Description" />
+        break;
+    case FieldTypeEnum.Number:
+        <MudTextField @bind-Value="InputNumber" Label="@Field.DisplayName" Placeholder="@Field.Placeholder" Variant="Variant.Text" FullWidth="true" Immediate="false" HelperText="@Field.Description" />
+        break;
+    case FieldTypeEnum.DateTime:
+        <MudDatePicker @bind-Date="InputDate" Label="@Field.DisplayName" Placeholder="@Field.Placeholder" Variant="Variant.Text" HelperText="@Field.Description" />
+        break;
+    case FieldTypeEnum.Boolean:
+        <MudSwitch @bind-Value="InputBoolean" T="bool?" Label="@Field.DisplayName" Color="Color.Primary" />
+        <MudText Typo="Typo.caption" Color="Color.Primary">@Field.Description</MudText>
+        break;
+    case FieldTypeEnum.Object:
+        if (Field.Fields != null && Field.Fields.Any())
+        {
+            <EditorFieldList ValueStore="ValueStore" PropertyPath="@PropertyField" Fields="@Field.Fields" />
+        }
+        break;
+    default:
+        <MudText Typo="Typo.body2" Color="Color.Error">Unsupported field type: @Field.Type</MudText>
+        break;
+}
+
+@code {
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+    [Parameter] public required FormField Field { get; set; }
+    [Parameter] public string PropertyPath { get; set; }
+
+    string PropertyField =>$"{PropertyPath}";
+
+    private string InputString { get => ValueStore.GetValue<string>(PropertyPath); set => ValueStore.SetValue<string>(PropertyPath, value); }
+    private double? InputNumber { get => ValueStore.GetValue<double?>(PropertyPath); set => ValueStore.SetValue<double?>(PropertyPath, value); }
+    private bool? InputBoolean { get => ValueStore.GetValue<bool?>(PropertyPath); set => ValueStore.SetValue<bool?>(PropertyPath, value); }
+    private DateTime? InputDate { get => ValueStore.GetValue<DateTime?>(PropertyPath); set => ValueStore.SetValue<DateTime?>(PropertyPath, value); }
+
+
+}

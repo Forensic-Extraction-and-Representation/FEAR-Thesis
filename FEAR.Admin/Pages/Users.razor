@@ -1,0 +1,131 @@
+@page "/users"
+@using FEAR.Admin.Services.Management
+@using FEAR.Host.Core.Api.Management.Security
+@using FEAR.Host.Domain.Api.Management.Security
+@using FEAR.Domain.Model.Authentication
+@inject UserService UserService
+@inject RoleService RoleService
+@using MudBlazor
+@attribute [Authorize]
+
+<MudPaper Class="pa-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+        <MudText Typo="Typo.h6">Users</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenNewUserDialog">
+            <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-1" /> New User
+        </MudButton>
+    </MudStack>
+
+    <MudTable Items="users" Hover="true" Dense="true" T="FEAR.Domain.Model.Authentication.User" OnRowClick="OnUserRowClick" Class="mt-2">
+        <HeaderContent>
+            <MudTh>UserName</MudTh>
+            <MudTh>Email</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="UserName">@context.UserName</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="UserEditorModel" @ref="userDialog" OnSave="SaveUserAsync" OnClose="OnUserDialogClosed">
+    <HeaderTemplate Context="hdr">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((hdr.UserId == Guid.Empty) ? "Create User" : $"Edit User: {hdr.UserName}")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate Context="ctx">
+        <MudTextField @bind-Value="ctx.UserName" Label="User Name" FullWidth="true" />
+        <MudTextField @bind-Value="ctx.Email" Label="Email" FullWidth="true" />
+        <MudTextField @bind-Value="ctx.NewPassword" Label="Password" InputType="InputType.Password" FullWidth="true" />
+        <MudText Typo="Typo.subtitle2" Class="mt-2">Assign System Roles</MudText>
+        <MudSelect T="Guid" MultiSelection="true" @bind-SelectedValues="ctx.RoleIds" Dense="true" FullWidth="true">
+            @foreach (var r in roles)
+            {
+                <MudSelectItem T="Guid" Value="@r.RoleId">@r.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+@code {
+    private List<FEAR.Domain.Model.Authentication.User> users = new();
+    private List<Role> roles = new();
+
+    private FEAR.Blazor.Shared.Components.EditorDialog<UserEditorModel> userDialog;
+
+    private record UserEditorModel
+    {
+        public Guid UserId { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+        public IEnumerable<Guid> RoleIds { get; set; } = Enumerable.Empty<Guid>();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var u = await UserService.QueryUsersAsync(new QueryUsersRequest());
+        users = u.Results.ToList();
+        var r = await RoleService.QueryRolesAsync(new FEAR.Host.Domain.Api.Management.Security.QueryRoles.Request());
+        roles = r.Results.ToList();
+        StateHasChanged();
+    }
+
+    private async Task OnUserRowClick(TableRowClickEventArgs<FEAR.Domain.Model.Authentication.User> e)
+    {
+        var m = new UserEditorModel
+        {
+            UserId = e.Item.UserId,
+            UserName = e.Item.UserName,
+            Email = e.Item.Email,
+            RoleIds = (await UserService.QueryUserSystemRolesAsync(new QuerySystemUserRoles.Request() { UserId = e.Item.UserId })).Results.First().RoleIds
+        };
+        userDialog.BeginEdit(m);
+    }
+
+    private void OpenNewUserDialog()
+    {
+        userDialog.BeginEdit(new UserEditorModel());
+    }
+
+    private async Task SaveUserAsync(UserEditorModel model)
+    {
+        if (model.UserId == Guid.Empty)
+        {
+            // Create new user
+            var create = new CreateUserRequest { UserName = model.UserName, Email = model.Email, Password = model.NewPassword };
+            var resp = await UserService.CreateUserAsync(create);
+            if (resp.Success)
+            {
+                var roleIds = model.RoleIds?.ToList() ?? new List<Guid>();
+                if (roleIds.Any())
+                {
+                    await UserService.AssignSystemRolesAsync(new AssignSystemRoles.Request { UserId = resp.UserId, RoleIds = roleIds });
+                }
+            }
+        }
+        else
+        {
+            // Update existing user
+            await UserService.UpdateUserAsync(new UpdateUserRequest { UserId = model.UserId, UserName = model.UserName, Email = model.Email });
+            if (!string.IsNullOrWhiteSpace(model.NewPassword))
+                await UserService.UpdatePasswordAsync(new UpdatePasswordRequest { UserId = model.UserId, NewPassword = model.NewPassword });
+
+            var roleIds = model.RoleIds?.ToList() ?? new List<Guid>();
+            await UserService.AssignSystemRolesAsync(new AssignSystemRoles.Request { UserId = model.UserId, RoleIds = roleIds });
+        }
+        await LoadAsync();
+    }
+
+    private Task OnUserDialogClosed(bool saved)
+    {
+        return Task.CompletedTask;
+    }
+}

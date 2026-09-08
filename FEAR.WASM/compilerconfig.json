@@ -1,0 +1,34 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/site.css",
+    "inputFile": "wwwroot/css/site.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/graph-window.css",
+    "inputFile": "wwwroot/css/components/graph-window.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/omnibar/chat-input.css",
+    "inputFile": "wwwroot/css/components/omnibar/chat-input.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/omnibar/omnibar.css",
+    "inputFile": "wwwroot/css/components/omnibar/omnibar.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/omnibar/query-input.css",
+    "inputFile": "wwwroot/css/components/omnibar/query-input.scss"
+  },
+  {
+    "outputFile": "wwwroot/css/components/data-table.css",
+    "inputFile": "wwwroot/css/components/data-table.scss"
+  },
+  {
+    "outputFile": "npm_packages/src/index.es5.js",
+    "inputFile": "npm_packages/src/index.js"
+  },
+  {
+    "outputFile": "Components/Omnibar/Omnibar.razor.css",
+    "inputFile": "Components/Omnibar/Omnibar.razor.scss"
+  }
+]

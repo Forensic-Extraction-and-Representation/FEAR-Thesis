@@ -1,0 +1,99 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using MudBlazor
+
+<MudItem xs="12">
+    <MudStack Spacing="2">
+        <MudGrid Spacing="2">
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle1">
+                    <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="OnExpandCollapseClick">
+                        <MudIcon Icon="@(_expanded? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" />
+                    </MudButton>
+                    @Field.DisplayName
+                    @if (!_expanded)
+                    {
+                        @($" ({dictionaryKeys.Count()})")
+                    }
+                </MudText>
+            </MudItem>
+
+            @if (_expanded)
+            {
+                <MudItem xs="1"></MudItem>
+                <MudItem xs="11"><MudText Typo="Typo.subtitle2" Class="mb-2">@Field.Description</MudText></MudItem>
+                <MudItem xs="1"></MudItem>
+                <MudItem xs="11">
+                    <MudButton Variant=Variant.Outlined Color="Color.Primary" Size="Size.Small" OnClick="() => ValueStore.AddDictionaryEntry(PropertyPath)">
+                        Add @Field.DisplayName Entry
+                    </MudButton>
+
+                </MudItem>
+            }
+
+            @foreach (var key in dictionaryKeys)
+            {
+                <MudItem xs="12">
+                    <MudCollapse Expanded="_expanded">
+                        <MudPaper Class="pa-2 mb-2" Elevation=3>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="1">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => ValueStore.RemoveDictionaryEntry(PropertyPath, key)" />
+                                </MudItem>
+                                <MudItem xs="11">
+                                    <MudGrid Spacing="1">
+                                        <MudItem xs="12">
+                                            <EditorField ValueStore="ValueStore" Field="keyFormField" PropertyPath="@key" />
+                                        </MudItem>
+                                        @if (!string.IsNullOrEmpty(ValueStore.GetValue<string>(key)))
+                                        {
+                                            @foreach (var valueField in valueFormFields)
+                                            {
+                                                <MudItem xs="12">
+                                                    <EditorField ValueStore="ValueStore" Field="valueField" PropertyPath="@($"{key.Replace("._Keys", "")}.{valueField.PropertyName}")" IncludeDivider="false" />
+                                                </MudItem>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="ml-3">* Please enter a @keyFormField.DisplayName to begin editing entries.</MudText>
+                                        }
+                                    </MudGrid>
+                                </MudItem>
+                            </MudGrid>
+                        </MudPaper>
+                    </MudCollapse>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudStack>
+</MudItem>
+
+@code {
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+    [Parameter] public FormField Field { get; set; }
+    [Parameter] public string PropertyPath { get; set; } = "";
+
+    bool _expanded = false;
+
+    private void OnExpandCollapseClick()
+    {
+        _expanded = !_expanded;
+    }
+
+    string ValueStoreDictionaryKeyProperty => $"{PropertyPath}._Keys";
+    FormField keyFormField
+    {
+        get
+        {
+            var entry = Field.Fields.FirstOrDefault(f => f.PropertyName == Field.DictionaryKey || f.PropertyName == "Key");
+
+            if (entry == null)
+            {
+                throw new InvalidOperationException($"Dictionary field {Field.PropertyName} does not have a valid key field defined.");
+            }
+            return entry;
+        }
+    }
+    IEnumerable<FormField> valueFormFields => Field.Fields.Where(f => f.PropertyName != Field.DictionaryKey);
+    IEnumerable<string> dictionaryKeys => ValueStore.GetArrayKeysOfProperty(ValueStoreDictionaryKeyProperty);
+}

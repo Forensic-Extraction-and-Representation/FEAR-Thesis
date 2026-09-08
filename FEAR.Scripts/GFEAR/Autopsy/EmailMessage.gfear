@@ -1,0 +1,26 @@
+﻿define codifier("TSK_EMAIL_MSG", "DFIO/Autopsy/EmailMessage");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy-email.owl#", "aut-email");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+
+accepts(Category, hostSha1, SourceFile, Path, ThreadID, MessageID, EmailTo, Subject, ReceivedDateTime, EmailFrom);
+
+result EmailMessage as aut:EmailMessage with {
+    create property aut:category as xsd:String with Category;
+    create property aut:sourceFile as xsd:string with SourceFile;
+    create property aut-email:path as xsd:string with Path;
+    create property aut-email:threadId as xsd:string with ThreadID;
+    create property aut-email:messageId as xsd:string with MessageID;
+    create property aut-email:emailTo as xsd:string with EmailTo;
+    create property aut-email:emailFrom as xsd:string with EmailFrom;
+    create property aut-email:subject as xsd:string with Subject;
+    create property aut-email:receivedDateTime as xsd:dateTime with ReceivedDateTime;
+
+    create entity suspectHost as aut:Host with {
+        create property aut:hostSha1 as xsd:hexBinary with HostSha1;
+    } identified by required aut:hostSha1;
+
+    create property aut:sourceHost with entity suspectHost;
+} identified by required aut-email:messageId, required aut-email:emailTo, required entity aut:sourceHost suspectHost, optional aut-email:receivedDateTime;

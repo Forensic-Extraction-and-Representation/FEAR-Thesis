@@ -1,0 +1,27 @@
+{
+  "name": "FEAR.WASM",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"build": "npx tsc --project tsconfig.json && npx webpack --entry ./src/index.js --output-path ../wwwroot/js --output-filename index.bundle.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@sigma/edge-curve": "^3.1.0",
+    "@sigma/utils": "^3.0.0",
+    "graphology": "^0.26.0",
+    "graphology-layout-force": "^0.2.4",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "graphology-library": "^0.8.0",
+    "graphology-types": "^0.24.8",
+    "sigma": "^3.0.2"
+  }
+}

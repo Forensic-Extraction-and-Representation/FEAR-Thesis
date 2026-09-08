@@ -1,0 +1,100 @@
+﻿@using FEAR.Blazor.Shared.Components.Forms
+@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Pre-Compiled Library Repositories", Icons.Material.Filled.LocalLibrary)]
+
+<MudText Typo="Typo.h5" Class="mb-4"> Pre-Compiled Library Repositories</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        Pre-Compiled Library Repositories are synchronized from a local or remote repository to the case PreCompiled directory.<br />
+    </MudText>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <MudText Class="mb-4">
+            Collector FEAR Script Repositories
+        </MudText>
+    
+        <EditableList T="string"
+                      GetItems="@(() => cfearLibraries)"
+                      OnItemAdded="@(item => cfearLibraries.Add(item))"
+                      OnItemDeleted="@(item => cfearLibraries.Remove(item))"
+                      Label="CFEAR Script Repositories"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+    </MudPaper>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <MudText Class="mb-4">
+            Graph-Codify FEAR Script Repositories
+        </MudText>
+
+        <EditableList T="string"
+                      GetItems="@(() => gfearLibraries)"
+                      OnItemAdded="@(item => gfearLibraries.Add(item))"
+                      OnItemDeleted="@(item => gfearLibraries.Remove(item))"
+                      Label="GFEAR Script Repositories"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+    </MudPaper>
+    
+    <MudPaper Elevation="0" Class="my-4">
+        <MudText Class="mb-4">
+            Ruleset FEAR Script Repositories
+        </MudText>
+
+        <EditableList T="string"
+                      GetItems="@(() => rfearLibraries)"
+                      OnItemAdded="@(item => rfearLibraries.Add(item))"
+                      OnItemDeleted="@(item => rfearLibraries.Remove(item))"
+                      Label="RFEAR Script Repositories"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true" />
+    </MudPaper>
+    
+</MudForm>
+
+@code {
+    List<string> gfearLibraries = new List<string>();
+    List<string> rfearLibraries = new List<string>();
+    List<string> cfearLibraries = new List<string>();
+
+    protected override void OnInitialized()
+    {
+        if (Model.Configuration.PrecompiledLibraries.TryGetValue("CFEAR", out var cRepositories))
+        {
+            cfearLibraries = ((String[])cRepositories).ToList();
+        }
+
+        if (Model.Configuration.PrecompiledLibraries.TryGetValue("GFEAR", out var gRepositories))
+        {
+            gfearLibraries = ((String[])gRepositories).ToList();
+        }
+
+        if (Model.Configuration.PrecompiledLibraries.TryGetValue("RFEAR", out var rRepositories))
+        {
+            rfearLibraries = ((String[])rRepositories).ToList();
+        }
+
+        base.OnInitialized();
+    }
+
+    public override void OnWizardStepChanging()
+    {
+        Model.Configuration.PrecompiledLibraries["CFEAR"] = cfearLibraries.ToArray();
+        Model.Configuration.PrecompiledLibraries["GFEAR"] = gfearLibraries.ToArray();
+        Model.Configuration.PrecompiledLibraries["RFEAR"] = rfearLibraries.ToArray();
+
+        base.OnWizardStepChanging();
+    }
+
+    public override Task<bool> IsValidAsync()
+    {
+        return Task.FromResult(true);
+    }
+}
+

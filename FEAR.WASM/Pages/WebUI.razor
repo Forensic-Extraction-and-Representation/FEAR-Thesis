@@ -1,0 +1,72 @@
+﻿@layout WebUILayout
+@page "/WebUI/{InvestigationName}"
+@using FEAR.WASM.Components.Dialogs
+@using FEAR.WASM.Components.Omnibar
+@using MudBlazor
+@using MudBlazor.Extensions
+@using MudBlazor.Extensions.Options
+
+<HeadContent>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FEAR Web UI</title>
+</HeadContent>
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <Omnibar />
+        <MudSpacer />
+        <MudText Align="Align.Center" Typo="Typo.h6" Class="ml-2">Case: @InvestigationName</MudText>
+        <MudSpacer />
+        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                 AriaLabel="Open Action Menu">
+            <MudMenuItem Icon="@Icons.Material.Outlined.CloudUpload" Label="Upload" OnClick="OpenUploadAsync" />
+            <MudMenuItem Icon="@Icons.Material.Outlined.Palette" Label="Color Map" OnClick=OpenColorMap />
+            <MudMenuItem Icon="@Icons.Material.Outlined.Download" Label="Download" OnClick=Download />
+        </MudMenu>
+    </MudAppBar>
+    <MudMainContent Style="height:100%">
+        <MudElement Style="display:block;height: 100%;position: relative;">
+            <FEAR.WASM.Components.GraphContainer />
+        </MudElement>
+    </MudMainContent>
+</MudLayout>
+
+@code{
+
+    [Inject] IDialogService DialogService { get; set; }
+
+    private DialogOptions uploadDialog = new DialogOptions()
+    {
+        CloseButton = true,
+        FullScreen = true
+    };
+
+    private DialogOptionsEx standardDialogOptions = new DialogOptionsEx()
+    {
+        CloseButton = true,
+        MaxWidth = MaxWidth.ExtraLarge,
+        FullWidth=true,
+        MaxHeight = MaxHeight.ExtraLarge,
+		FullHeight = true,
+        Resizeable = false,
+        DragMode = MudDialogDragMode.None,
+        Position = DialogPosition.TopCenter
+    };
+
+    private async Task OpenUploadAsync()
+    {
+        DialogService.ShowAsync<UploadDialog>("Artifact Workbench", uploadDialog);
+    }
+
+    private async Task OpenColorMap()
+    {
+        DialogService.ShowExAsync<ColorMapDialog>("Color Maps", standardDialogOptions);
+    }
+
+    private async Task Download()
+    {
+        await QueryService.DownloadRdf();
+    }
+}
+

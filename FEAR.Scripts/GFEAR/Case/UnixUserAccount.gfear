@@ -1,0 +1,26 @@
+﻿define codifier("UnixUserAccount", "GraphCodify/CaseOntology/UnixUserAccount");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+
+accepts(UID, GID, Username, HomeDir, Shell);
+result account as uco-observable:UnixAccount with {
+    create entity digitalAccountFacet as uco-observable:DigitalAccountFacet with {
+        create property uco-observable:displayName as xsd:string with Username;
+        create property uco-observable:accountLogin as xsd:string with Username;
+        create property uco-observable:homeDirectory as xsd:string with HomeDir;
+        create property uco-observable:lastLoginTime as xsd:dateTime with lastLoginTime;
+    } identified by required uco-observable:displayName, required uco-observable:accountLogin, optional uco-observable:lastLoginTime;
+
+    create entity accountFacet as uco-observable:AccountFacet with {
+        create property uco-observable:accountIdentifier as xsd:string with UID;
+    } identified by required uco-observable:accountIdentifier;
+
+    create property uco-core:hasFacet with entity digitalAccountFacet;
+    create property uco-core:hasFacet with entity accountFacet;
+
+} identified by optional entity uco-core:hasFacet accountFacet, required entity uco-core:hasFacet digitalAccountFacet;

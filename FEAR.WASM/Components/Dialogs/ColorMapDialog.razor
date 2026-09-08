@@ -1,0 +1,155 @@
+﻿@using FEAR.WASM.Interop
+@using FEAR.WASM.Providers
+@using FEAR.Domain.Model.ColorMap
+@using FEAR.Blazor.Shared.Components
+@using FEAR.Blazor.Shared.Components.ColorMaps
+@using MudBlazor
+@using MudBlazor.Extensions
+@inject IColorMapProvider Provider
+@inject FEAR.WASM.Services.InvestigationService InvestigationService
+
+
+<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h6">Color Maps</MudText>
+	</TitleContent>
+	<DialogContent>
+		<MudGrid Class="pa-2">
+			<MudItem xs="12" md="4">
+				<MudStack Spacing="1">
+					<MudText Typo="Typo.subtitle2">Active Maps (merged)</MudText>
+					<MudList T="ColorMap" Dense="true">
+						@foreach (var m in activeMaps)
+						{
+							<MudListItem OnClick="() => ViewColorMapSet(m)">
+								<MudText>@m.Name (@m.Description)</MudText>
+							</MudListItem>
+						}
+					</MudList>
+
+					<MudDivider Class="my-2" />
+					<MudText Typo="Typo.subtitle2">Session Overrides</MudText>
+					<MudList T="ColorMap" Dense="true">
+						@foreach (var s in sessionMaps)
+						{
+							<MudListItem OnClick="() => EditColorMapSet(s)">
+								<MudText>@s.Name (@s.Description)</MudText>
+							</MudListItem>
+						}
+					</MudList>
+					<MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Add" OnClick="AddSessionMap">Add Session Map</MudButton>
+					<MudStack Row="true" Spacing="1">
+						<MudButton Variant="Variant.Outlined" OnClick="ApplySessionOverrides">Apply Session</MudButton>
+						<MudButton Variant="Variant.Outlined" OnClick="ClearSessionOverrides">Clear Session</MudButton>
+					</MudStack>
+					<MudText Class="mt-1" Typo="Typo.caption">Changes apply on next graph render.</MudText>
+				</MudStack>
+			</MudItem>
+			<MudItem xs="12" md="8">
+				@if (selectedSet != null)
+				{
+					<ColorMapSetEditor Set="selectedSet" ReadOnly="isReadOnly" />
+					if (!isReadOnly)
+					{
+						<MudStack Row="true" Spacing="1" Class="mt-2" Justify="Justify.FlexEnd">
+							<MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="DeleteSelected">Delete</MudButton>
+							<MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveSelected">Save</MudButton>
+						</MudStack>
+					}
+				}
+				else
+				{
+					<MudText>Select or add a color map.</MudText>
+				}
+			</MudItem>
+		</MudGrid>
+	</DialogContent>
+</MudDialog>
+
+@code {
+	private List<ColorMapSet> activeMaps = new();
+	private List<ColorMapSet> sessionMaps = new();
+
+	private ColorMapSet? selectedSet;
+	private bool isReadOnly = false;
+
+	protected override async Task OnInitializedAsync()
+	{
+		activeMaps = Provider.GetActiveMaps().ToList();
+		sessionMaps = Provider.GetSessionMaps().ToList();
+	}
+
+	private void AddSessionMap()
+	{
+		isReadOnly = false;
+		selectedSet = new ColorMapSet
+		{
+			ColorMapSetId = Guid.NewGuid(),
+			Name = "Session Overrides",
+			Description = "Temporary session overrides",
+			ColorMaps = new List<FEAR.Domain.Model.ColorMap.ColorMap>
+			{
+				new FEAR.Domain.Model.ColorMap.ColorMap
+				{
+					Name = "New Map",
+					Description = "",
+					Prefix = "ns",
+					Ontology = new Uri("http://example.org/ns#"),
+					Styles = new FEAR.Domain.Model.ColorMap.ColorMapStyle
+					{
+						Edge = new FEAR.Domain.Model.ColorMap.EdgeStyle("#999"),
+						Node = new FEAR.Domain.Model.ColorMap.NodeStyle("#999")
+					}
+				}
+			}
+		};
+	}
+
+	private void ViewColorMapSet(ColorMapSet map)
+	{
+		isReadOnly = true;
+		selectedSet = map;
+	}
+
+	private void EditColorMapSet(ColorMapSet map)
+	{
+		isReadOnly = false;
+		selectedSet = map;
+	}
+
+	private void ApplySessionOverrides()
+	{
+		Provider.AddSessionMap(selectedSet);
+		activeMaps = Provider.GetActiveMaps().ToList();
+		sessionMaps = Provider.GetSessionMaps().ToList();
+	}
+
+	private void ClearSessionOverrides()
+	{
+		Provider.ClearSessionMaps();
+		sessionMaps = Provider.GetSessionMaps().ToList();
+		activeMaps = Provider.GetActiveMaps().ToList();
+		selectedSet = null;
+	}
+
+	private async Task SaveSelected()
+	{
+		if (selectedSet == null) return;
+		var id = await Provider.UpsertAsync(new FEAR.Domain.Dto.ColorMap.ColorMapSet
+		{
+			ColorMapSetId = selectedSet.ColorMapSetId,
+			Name = selectedSet.Name,
+			EntityDiscriminator = selectedSet.EntityDiscriminator,
+			EntityId = selectedSet.EntityId,
+			ColorMaps = selectedSet.ColorMaps
+		});
+		selectedSet.ColorMapSetId = id;
+	}
+
+	private async Task DeleteSelected()
+	{
+		if (selectedSet == null || selectedSet.ColorMapSetId == Guid.Empty) return;
+		await Provider.DeleteAsync(selectedSet.ColorMapSetId);
+		selectedSet = null;
+	}
+}

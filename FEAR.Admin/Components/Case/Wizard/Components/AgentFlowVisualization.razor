@@ -1,0 +1,315 @@
+@using FEAR.Domain.Agents
+@using MudBlazor
+@using System.Net
+
+<MudCard Class="mb-4" Elevation="3">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">Agents - Feedforward Execution</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudText><b>Inference Enabled:</b> @(Enabled ? "Yes" : "No")</MudText>
+
+        @if(Enabled)
+        {
+            <MudDivider Class="my-3"/>
+            <MudAlert Severity="Severity.Info" Dense="true" Class="my-2">
+                <MudText Typo="Typo.body2">
+                    <b>Feedforward Execution:</b> Agents execute automatically when their input dependencies are satisfied. 
+                    The flow diagram below shows the dependency graph. Execution continues until no more agents can run.
+                </MudText>
+            </MudAlert>
+
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <MudText><b>Default Agent:</b> @DefaultAgent</MudText>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudText><b>Total Agents:</b> @Agents.Count</MudText>
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <MudText><b>Entry Points:</b> @GetEntryPointCount()</MudText>
+                </MudItem>
+            </MudGrid>
+
+            @if(_nodes.Any())
+            {
+                <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2"><b>Dependency Flow Graph</b></MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">
+                    <b>Legend:</b> 
+                    <span style="color: var(--mud-palette-secondary);">■</span> System Inputs/Outputs &nbsp;
+                    <span style="color: var(--mud-palette-primary);">■</span> Agents
+                </MudText>
+                <div style="overflow-x: auto; max-width: 100%; padding: 20px; border: 1px solid var(--mud-palette-lines-default); border-radius: 4px; background-color: var(--mud-palette-background-grey);">
+                   <svg width="@_width" height="@_height" style="max-width:100%; overflow-x:auto">
+                       <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                              <polygon points="0 0, 10 3.5, 0 7" fill="var(--mud-palette-text-primary)" />
+                            </marker>
+                       </defs>
+                       @foreach(var edge in _edges)
+                       {
+                            <line 
+                                x1="@(edge.From.X + NodeWidth)" 
+                                y1="@(edge.From.Y + NodeHeight/2)" 
+                                x2="@(edge.To.X)" 
+                                y2="@(edge.To.Y + NodeHeight/2)" 
+                                stroke="var(--mud-palette-text-primary)" 
+                                stroke-width="2" 
+                                marker-end="url(#arrowhead)" />
+                       }
+                       @foreach(var node in _nodes)
+                       {
+                            <rect x="@node.X" y="@node.Y" width="@NodeWidth" height="@NodeHeight" rx="4" fill="@(node.IsSystem ? "var(--mud-palette-secondary)" : "var(--mud-palette-primary)")" />
+                            @((MarkupString)$"<text x=\"{node.X + NodeWidth/2}\" y=\"{node.Y + NodeHeight/2 + 5}\" fill=\"white\" text-anchor=\"middle\" font-size=\"14\" style=\"pointer-events: none;\">{WebUtility.HtmlEncode(node.Label)}</text>")
+                       }
+                   </svg>
+                </div>
+
+                <MudText Typo="Typo.body2" Class="mt-2" Color="Color.Info">
+                    <b>Execution Levels:</b> @_maxLevel levels detected. 
+                    Agents at the same level can potentially execute in parallel (if inputs are available).
+                </MudText>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Warning" Class="my-2">No agents configured or no valid dependencies found.</MudAlert>
+            }
+
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2"><b>Agent Details</b></MudText>
+
+            @foreach(var agentConfig in Agents)
+            {
+                var agentDef = agentConfig.Value;
+                var agentOptions = agentDef.AgentOptions ?? new Dictionary<string, object>();
+
+                <MudPaper Class="pa-3 my-2" Outlined="true">
+                    <MudGrid>
+                        <MudItem xs="12" md="8">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@agentDef.AgentName</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">@agentDef.Description</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info">@agentDef.AgentType</MudChip>
+                        </MudItem>
+                    </MudGrid>
+
+                    @if (agentDef.InputChain != null && agentDef.InputChain.Length > 0)
+                    {
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.body2" Class="mb-1"><b>Required Inputs:</b></MudText>
+                        <MudChipSet T="string">
+                            @foreach (var input in agentDef.InputChain)
+                            {
+                                var isSystemInput = input.StartsWith("<") && input.EndsWith(">");
+                                <MudChip T="string" Size="Size.Small" Color="@(isSystemInput ? Color.Secondary : Color.Default)">
+                                    @input
+                                </MudChip>
+                            }
+                        </MudChipSet>
+                    }
+
+                    @if (agentOptions.Any())
+                    {
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.body2" Class="mb-1"><b>Configuration:</b></MudText>
+                        <MudGrid>
+                            @foreach (var kvp in agentOptions)
+                            {
+                                <MudItem xs="12" sm="6" md="4">
+                                    <MudText Typo="Typo.body2"><b>@kvp.Key:</b> @kvp.Value</MudText>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                </MudPaper>
+            }
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public Dictionary<string, AgentDefinition> Agents { get; set; } = new();
+    [Parameter] public string DefaultAgent { get; set; } = string.Empty;
+    [Parameter] public bool Enabled { get; set; }
+
+    // Graph Visualization Logic
+    private const double NodeWidth = 150;
+    private const double NodeHeight = 40;
+    private List<Node> _nodes = new();
+    private List<Edge> _edges = new();
+    private double _width = 800;
+    private double _height = 200;
+    private int _maxLevel = 0;
+
+    private class Node
+    {
+        public string Id { get; set; } = "";
+        public string Label { get; set; } = "";
+        public bool IsSystem { get; set; }
+        public int Level { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+    private class Edge
+    {
+        public Node From { get; set; } = new();
+        public Node To { get; set; } = new();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        BuildGraph();
+    }
+
+    private int GetEntryPointCount()
+    {
+        if (!Agents.Any()) return 0;
+
+        // Count agents that only depend on system inputs (prompt/graph)
+        return Agents.Count(a => 
+            a.Value.InputChain != null && 
+            a.Value.InputChain.All(input => 
+                input.Equals("<prompt>", StringComparison.OrdinalIgnoreCase) || 
+                input.Equals("<graph>", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private void BuildGraph()
+    {
+        _nodes.Clear();
+        _edges.Clear();
+
+        if (!Enabled) return;
+        if (Agents == null) return;
+
+        var nodeMap = new Dictionary<string, Node>(StringComparer.OrdinalIgnoreCase);
+
+        // System Nodes
+        var promptNode = new Node { Id = "<prompt>", Label = "Prompt", IsSystem = true };
+        nodeMap[promptNode.Id] = promptNode;
+        _nodes.Add(promptNode);
+
+        var graphNode = new Node { Id = "<graph>", Label = "Graph", IsSystem = true };
+
+        // Agent Nodes
+        foreach (var kvp in Agents)
+        {
+            var node = new Node { Id = kvp.Key, Label = kvp.Value.AgentName ?? kvp.Key };
+            nodeMap[kvp.Key] = node;
+            _nodes.Add(node);
+        }
+
+        var consumedOutputs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        bool userNodeNeeded = false;
+
+        // Build Edges
+        foreach (var kvp in Agents)
+        {
+            var targetNode = nodeMap[kvp.Key];
+            if (kvp.Value.InputChain == null) continue;
+
+            foreach (var input in kvp.Value.InputChain)
+            {
+                var sourceId = input;
+                if (string.Equals(sourceId, "<graph>", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!nodeMap.ContainsKey("<graph>"))
+                    {
+                        nodeMap["<graph>"] = graphNode;
+                        _nodes.Add(graphNode);
+                    }
+                    sourceId = "<graph>";
+                }
+                else if (string.Equals(sourceId, "<prompt>", StringComparison.OrdinalIgnoreCase))
+                {
+                     sourceId = "<prompt>";
+                }
+
+                if (nodeMap.TryGetValue(sourceId, out var sourceNode))
+                {
+                    _edges.Add(new Edge { From = sourceNode, To = targetNode });
+                    if (!sourceNode.IsSystem)
+                    {
+                        consumedOutputs.Add(sourceId);
+                    }
+                }
+            }
+        }
+
+        // Connect unused outputs to User
+        foreach (var kvp in Agents)
+        {
+            if (!consumedOutputs.Contains(kvp.Key))
+            {
+                userNodeNeeded = true;
+                break;
+            }
+        }
+
+        Node? userNode = null;
+        if (userNodeNeeded)
+        {
+            userNode = new Node { Id = "<user>", Label = "User", IsSystem = true };
+            nodeMap["<user>"] = userNode;
+            _nodes.Add(userNode);
+            
+            foreach (var kvp in Agents)
+            {
+                if (!consumedOutputs.Contains(kvp.Key))
+                {
+                    _edges.Add(new Edge { From = nodeMap[kvp.Key], To = userNode });
+                }
+            }
+        }
+
+        // Layout: Topological Sort / Level Calculation (for feedforward execution visualization)
+        foreach(var node in _nodes) node.Level = 0;
+
+        // Iteratively calculate levels based on dependencies
+        for (int i = 0; i < _nodes.Count + 2; i++)
+        {
+            foreach (var edge in _edges)
+            {
+                if (edge.To.Level <= edge.From.Level)
+                {
+                    edge.To.Level = edge.From.Level + 1;
+                }
+            }
+        }
+
+        _maxLevel = _nodes.Any() ? _nodes.Max(n => n.Level) : 0;
+
+        var levelGroups = _nodes.GroupBy(n => n.Level).OrderBy(g => g.Key).ToList();
+        double xSpacing = 200;
+        double ySpacing = 60;
+        double startX = 20;
+        double startY = 20;
+
+        double maxLevelNodes = levelGroups.Any() ? levelGroups.Max(g => g.Count()) : 0;
+        double totalGraphHeight = maxLevelNodes * ySpacing;
+
+        foreach (var group in levelGroups)
+        {
+            int count = group.Count();
+            double groupHeight = count * ySpacing;
+            double yOffset = (totalGraphHeight - groupHeight) / 2;
+
+            int i = 0;
+            foreach (var node in group)
+            {
+                node.X = startX + (node.Level * xSpacing);
+                node.Y = startY + yOffset + (i * ySpacing);
+                i++;
+            }
+        }
+
+        if (levelGroups.Any())
+        {
+            _width = (levelGroups.Max(g => g.Key) + 1) * xSpacing + NodeWidth + 40;
+            _height = Math.Max(200, totalGraphHeight + (startY * 2));
+        }
+    }
+}

@@ -1,0 +1,20 @@
+﻿define codifier("TSK_WEB_HISTORY", "DFIO/Autopsy/WebHistory");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, Domain, AccessedDateTime, URL);
+
+result WebHistory as aut:WebHistory with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:domain as xsd:string with Domain;
+	create property aut:accessedDateTime as xsd:dateTime with AccessedDateTime;
+	create property aut:url as xsd:string with URL;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:accessedDateTime, required aut:domain, required aut:url, required entity aut:sourceHost suspectHost;

@@ -1,0 +1,33 @@
+define codifier("COLLECTED_ATTACK_PATTERN", "Collector/Mitre/AttackPattern");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("https://purl.org/ontology/mitre/", "ma");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Id, Name, Platforms, DataSources, Description_Filenames, Description_FileExtensions, Description_Programs, Description_Hashes, Description_Tools, Description_OperatingSystems, Description_IPAddresses, Description_Domains);
+
+result AttakcPattern <"/{Id}"> as ma:AttackPattern with {
+	create property ma:Id as xsd:string with Id;
+	create property ma:Name as xsd:string with Name;
+	
+	foreach platform in Platforms {  
+		create property ma:platform as xsd:string with platform;
+    }
+
+	foreach datasource in DataSources {  
+		create property ma:dataSource as xsd:string with datasource;
+	}
+
+	foreach filename in Description_Filenames {  
+		create property ma:description_Filename as xsd:string with filename;
+	}
+
+	foreach tool in Description_Tools {  
+		create property ma:description_Tool as xsd:string with tool;
+	}
+
+	foreach program in Description_Programs {  
+		create property ma:description_Program as xsd:string with program;
+	}
+
+} identified by required ma:Id;

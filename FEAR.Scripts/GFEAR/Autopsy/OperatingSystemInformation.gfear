@@ -1,0 +1,24 @@
+﻿define codifier("TSK_OS_INFO", "DFIO/Autopsy/OperatingSystemInformation");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, hostSha1, Owner, Path, TemporaryFilesDirectory, ProcessorArchitecture, ProductID, ProgramName, Name);
+
+result OperatingSystemInformation as aut:OperatingSystemInformation with {
+    create property aut:category as xsd:string with Category;
+    create property aut:sourceFile as xsd:string with SourceFile;
+    create property aut:owner as xsd:string with Owner;
+    create property aut:path as xsd:string with Path;
+    create property aut:temporaryFilesDirectory as xsd:string with TemporaryFilesDirectory;
+    create property aut:processorArchitecture as xsd:string with ProcessorArchitecture;
+    create property aut:productID as xsd:string with ProductID;
+    create property aut:programName as xsd:string with ProgramName;
+    create property aut:name as xsd:string with Name;
+
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:hexBinary with HostSha1;
+	} identified by required aut:hostSha1;
+
+    create property aut:sourceHost with entity suspectHost;
+} identified by required entity aut:sourceHost suspectHost, optional aut:name, optional aut:owner;

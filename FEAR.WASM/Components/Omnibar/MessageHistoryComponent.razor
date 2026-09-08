@@ -1,0 +1,116 @@
+﻿@using FEAR.WASM.Domain
+@using MudBlazor
+@inherits EventSubscriberBase
+<MudGrid Spacing="0" Class="flex-grow-1 overflow-y-auto" id="omnibar-message-wrapper">
+    <MudItem xs="12" Class="pa-3">
+        @if ((SessionHistoryService.Messages?.Count ?? 0) == 0)
+        {
+            <MudChat ChatPosition="ChatBubblePosition.Start">
+                <MudAvatar Size="Size.Small" Color="Color.Primary" Style="align-self:start">
+                    <MudIcon Color="Color.Dark" Icon="@Icons.Material.Filled.Chat" Size="Size.Small" />
+                </MudAvatar>
+                <MudChatBubble style="text-align:left">
+                    No messages yet. Start a conversation!
+                </MudChatBubble>
+            </MudChat>
+        }
+        else
+        {
+            @foreach (var message in SessionHistoryService.Messages)
+            {
+                <MudChat ChatPosition="@(message.Type == SessionMessageType.AgentResponse ? ChatBubblePosition.Start : ChatBubblePosition.End)">
+                    <MudChatHeader Time="@message.Timestamp" />
+                    <MudAvatar Size="Size.Small" Color="Color.Primary" Style="align-self:start">
+                        <MudIcon Color="Color.Dark" Icon="@message.Icon" Size="Size.Small" />
+                    </MudAvatar>
+
+                    @if (message.AgentMessages != null && message.AgentMessages.Count > 0)
+                    {
+                        <MudChatBubble style="text-align:left">
+                            @* Multi-agent response - show each agent's contribution *@
+                            <MudStack Spacing="2" Style="width: 100%;">
+                                @foreach (var agentMsg in message.AgentMessages)
+                                {
+                                    <MudCard Outlined="true" Style="margin-bottom: 8px;">
+                                        <MudCardHeader Style="padding: 8px 12px;">
+                                            <CardHeaderContent>
+                                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                                    <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Small" Color="Color.Info" />
+                                                    <MudText Typo="Typo.caption" Style="font-weight: 600;">@agentMsg.AgentName</MudText>
+                                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default" Style="height: 20px; font-size: 0.7rem;">
+                                                        @agentMsg.Timestamp.ToLocalTime().ToString("HH:mm:ss")
+                                                    </MudChip>
+                                                </MudStack>
+                                            </CardHeaderContent>
+                                        </MudCardHeader>
+                                        <MudCardContent Style="padding: 8px 12px;">
+                                            <MudMarkdown Value="@agentMsg.Content" Styling="Styling" />
+                                        </MudCardContent>
+                                    </MudCard>
+                                }
+                            </MudStack>
+                        </MudChatBubble>
+                    }
+                    else
+                    {
+                        @* Single message (legacy or user message) *@
+                        <MudChatBubble style="text-align:left">
+                            <MudMarkdown Value="@message.Content" Styling="Styling" />
+                        </MudChatBubble>
+                    }
+
+                    @if (message.ButtonTags.Count > 0)
+                    {
+                        <MudChatFooter>
+                            @if (message.ButtonTags.Contains(SessionMessageButtonTagsConstants.SAVED_QUERY))
+                            {
+                                <MudTooltip Text="Saved Query">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Star" Color="Color.Primary" />
+                                </MudTooltip>
+                            }
+                            @if (message.ButtonTags.Contains(SessionMessageButtonTagsConstants.RERUN_QUERY))
+                            {
+                                <MudTooltip Text="Rerun Query">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Replay" Color="Color.Primary" />
+                                </MudTooltip>
+                            }
+                            @if (message.ButtonTags.Contains(SessionMessageButtonTagsConstants.SHARE_QUERY))
+                            {
+                                <MudTooltip Text="Share Query">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Share" Color="Color.Primary" />
+                                </MudTooltip>
+                            }
+                            @if (message.ButtonTags.Contains(SessionMessageButtonTagsConstants.GRAPH_INCLUDED))
+                            {
+                                <MudTooltip Text="Graph Included">
+                                    <MudIconButton Size="Size.Small" Icon="Graph3" Color="Color.Primary" />
+                                </MudTooltip>
+                            }
+                            @if (message.ButtonTags.Contains(SessionMessageButtonTagsConstants.RUN_QUERY))
+                            {
+                                @*For agent response that includes a suggested query*@
+                                <MudTooltip Text="Run Query">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.SendTimeExtension" Color="Color.Primary" />
+                                </MudTooltip>
+                            }
+                        </MudChatFooter>
+                    }
+                </MudChat>
+            }
+        }
+    </MudItem>
+</MudGrid>
+@code {
+    private static readonly MudMarkdownStyling Styling = new()
+    {
+        CodeBlock =
+        {
+            Theme = CodeBlockTheme.DraculaBase16,
+        },
+        Table =
+        {
+            Elevation = 16,
+            CellMinWidth = 100,
+        },
+    };
+}

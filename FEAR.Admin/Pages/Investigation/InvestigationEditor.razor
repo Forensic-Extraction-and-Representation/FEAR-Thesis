@@ -1,0 +1,378 @@
+@using FEAR.Admin.Services.Management
+@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Model.InvestigationStore
+@using System.Text.Json;
+@using FEAR.Blazor.Shared.Components;
+@using FEAR.Host.Domain.Api.Management.Security
+@using MudBlazor
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo"
+                                            @ref="editorDialog" OnSave="OnSave" OnClose="OnClose"
+                                            CloseOnSave="@((t) => t.InvestigationId != Guid.Empty)"
+                                            DialogOptions="DialogOptions" IsSaveDisabled="()=> EditingQuery">
+    <HeaderTemplate Context="headerCtx">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((headerCtx.InvestigationId == Guid.Empty) ? "Create Investigation" : "Edit Investigation")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate>
+        <MudGrid Spacing="4">
+            <MudItem xs="12">
+                <MudTextField @bind-Value="context.Name" Label="Case Name" Required="false" For="@(() => context.Name)" Immediate="true" />
+                <MudTextField @bind-Value="context.CaseNumber" Label="Case Number" Required="false" For="@(() => context.CaseNumber)" Immediate="true" />
+                <MudTextField @bind-Value="context.CaseType" Label="Case Type" Required="false" For="@(() => context.CaseType)" Immediate="true" />
+                <MudSelect T="string" Label="Case Status" @bind-Value="context.CaseStatus" Required="true">
+                    <MudSelectItem Value=@("open")>Open</MudSelectItem>
+                    <MudSelectItem Value=@("closed")>Closed</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <FEAR.Blazor.Shared.Components.ConfigurationEditor.ConfigurationEditor ValueStore="ValueStore" EditorOptions="EditorOptions" />
+            </MudItem>
+
+            @if (context.InvestigationId != Guid.Empty)
+            {
+                <MudItem xs="12" Class="py-2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.subtitle2">Investigation Shared Queries</MudText>
+                        <MudTooltip Text="Create Investigation Query">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateInvestigationQuery">Add</MudButton>
+                        </MudTooltip>
+                    </MudStack>
+
+                    @if (InvQueries != null)
+                    {
+                        <MudDataGrid T="InvestigationQuery" MultiSelection=false Items="InvQueries" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilters"
+                                     Hideable="true">
+                            <Columns>
+                                <SelectColumn T="InvestigationQuery" />
+                                <PropertyColumn Property="x => x.Name" Title="Name" Sortable="true" Filterable="true" />
+                                <PropertyColumn Property="x => x.CreatedOn" Title="Created On" Sortable="true" Filterable="true" />
+                                <PropertyColumn Property="x => x.LastModifiedOn" Title="Last Modified" Sortable="true" Filterable="true" />
+                                <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" />
+                                <TemplateColumn Title="Actions" T="InvestigationQuery" Context="queryCtx">
+                                    <CellTemplate>
+                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => EditInvestigationQuery(queryCtx.Item)">Edit</MudButton>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="() => DeleteInvestigationQuery(queryCtx.Item)">Delete</MudButton>
+                                    </CellTemplate>
+                                </TemplateColumn>
+                            </Columns>
+                            <PagerContent>
+                                <MudDataGridPager T="InvestigationQuery" />
+                            </PagerContent>
+                        </MudDataGrid>
+                    }
+                    else
+                    {
+                        <MudCard>
+                            <MudCardContent>
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                <MudText>Loading Investigations Queries...</MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    @if (EditingQuery)
+                    {
+                        <MudDivider Class="my-4" />
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_selectedQuery.Name" Label="Query Name" Required="true" For="@(() => _selectedQuery.Name)" Immediate="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="_selectedQuery.Description" Label="Query Description" Required="false" For="@(() => _selectedQuery.Description)" Immediate="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudDivider Class="my-1" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle2">Query:</MudText>
+                                <FEAR.Blazor.Shared.Components.CodeEditor Language="sparql" @bind-CodeText="_selectedQuery.QueryText" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveInvestigationQuery" Class="mt-2">Done</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="CancelEditInvestigationQuery" Class="mt-2 ml-2">Cancel</MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    }
+                </MudItem>
+
+                <MudItem xs="12" Class="py-2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudText Typo="Typo.subtitle2">Investigation Users & Roles</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddInvestigationUser">Add User</MudButton>
+                    </MudStack>
+                    @if (InvestigationUsers != null)
+                    {
+                        <MudTable Items="InvestigationUsers" Dense="true" Hover="true" Class="mt-2" Context="ctx">
+                            <HeaderContent>
+                                <MudTh>User</MudTh>
+                                <MudTh>Role</MudTh>
+                                <MudTh></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="User">@ctx.UserName</MudTd>
+                                <MudTd DataLabel="Roles">@ctx.RoleName</MudTd>
+                                <MudTd>
+                                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => EditInvestigationUser(ctx)">Assign</MudButton>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <MudCard>
+                            <MudCardContent>
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                <MudText>Loading investigation users...</MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudItem>
+            }
+        </MudGrid>
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+<FEAR.Blazor.Shared.Components.EditorDialog T="InvestigationUserEditorModel" @ref="investigationUserDialog" OnSave="SaveInvestigationUser">
+    <HeaderTemplate Context="hdr">
+        <MudText Class="mt-3" Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+            @((hdr.UserId == Guid.Empty) ? "Add User To Investigation" : $"Assign Roles: {hdr.UserName}")
+        </MudText>
+    </HeaderTemplate>
+    <FormContentTemplate Context="ctx">
+        <MudAutocomplete T="FEAR.Domain.Model.Authentication.User" ToStringFunc="(u => u?.UserName ?? string.Empty)" @bind-Value="ctx.User" Label="User" Disabled="@(!ctx.IsNew)" Dense="true" FullWidth="true"
+                          SearchFunc="SearchUsers" />
+        <MudText Typo="Typo.subtitle2" Class="mt-2">Assign Investigation Roles</MudText>
+        <MudSelect T="Guid" MultiSelection=false @bind-Value="ctx.RoleId" Dense="true" FullWidth="true">
+            @foreach (var r in allRoles)
+            {
+                <MudSelectItem Value="@r.RoleId">@r.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </FormContentTemplate>
+</FEAR.Blazor.Shared.Components.EditorDialog>
+
+@code {
+
+    private DotNetObjectReference<InvestigationEditor> dotNetReference;
+    public InvestigationEditor()
+    {
+        dotNetReference = DotNetObjectReference.Create(this);
+    }
+
+    [Inject] IScrollManager ScrollManager { get; set; }
+    [Inject] TimeoutCallbackInterop TimeoutCallbackInterop { get; set; }
+    [Inject] InvestigationService InvestigationService { get; set; }
+    [Inject] UserService UserService { get; set; }
+    [Inject] RoleService RoleService { get; set; }
+
+    [Parameter] public EventCallback<InvestigationInfo> OnSave { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+
+    private IEnumerable<InvestigationQuery> InvQueries = null;
+    private EditorDialog<InvestigationInfo> editorDialog;
+    private InvestigationQuery _selectedQuery;
+    private string _originalQuery = String.Empty;
+    private string _searchString = "";
+
+    public DialogOptions DialogOptions = new DialogOptions()
+    {
+        MaxWidth = MaxWidth.Large,
+        FullWidth = true,
+        CloseButton = true,
+        BackdropClick = false
+    };
+
+    public EditorOptions EditorOptions { get; private set; }
+    public EditorValueStore ValueStore { get; private set; }
+    public bool EditingQuery => _selectedQuery != null;
+
+    private List<QueryInvestigationUserRoles.InvestigationUserRoles> InvestigationUsers = null;
+    private List<FEAR.Domain.Model.Authentication.User> allUsers = new();
+    private List<FEAR.Domain.Model.Authentication.Role> allRoles = new();
+
+    public Func<InvestigationQuery, bool> QuickFilters => x =>
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+        if (x.Name != null && x.Name.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (x.Description != null && x.Description.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (x.QueryText != null && x.QueryText.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        return false;
+    };
+
+    [JSInvokable]
+    public async Task scrollOnEdit()
+    {
+        await ScrollManager.ScrollToBottomAsync(".mud-dialog-content", ScrollBehavior.Smooth);
+    }
+
+    private async Task CreateInvestigationQuery()
+    {
+        await EditInvestigationQuery(new InvestigationQuery()
+        {
+            InvestigationQueryId = Guid.NewGuid(),
+            InvestigationId = editorDialog.EditingEntry.InvestigationId,
+            CreatedOn = DateTime.UtcNow,
+            LastModifiedOn = DateTime.UtcNow,
+            Name = "New Query",
+            Description = "Description",
+            QueryText = ""
+        });
+    }
+
+    private async Task EditInvestigationQuery(InvestigationQuery item)
+    {
+        _originalQuery = JsonSerializer.Serialize(item);
+        _selectedQuery = item;
+        StateHasChanged();
+
+        await TimeoutCallbackInterop.SetTimeoutAsync(dotNetReference, nameof(scrollOnEdit), 100);
+    }
+
+    private async Task CancelEditInvestigationQuery()
+    {
+        InvestigationQuery item = JsonSerializer.Deserialize<InvestigationQuery>(_originalQuery);
+        _selectedQuery.QueryText = item.QueryText;
+        _selectedQuery.Name = item.Name;
+        _selectedQuery.Description = item.Description;
+
+        _selectedQuery = null;
+        _originalQuery = String.Empty;
+    }
+
+    private async Task SaveInvestigationQuery()
+    {
+        if (_selectedQuery != null)
+        {
+            await InvestigationService.SaveInvestigationQuery(_selectedQuery);
+        }
+
+        _selectedQuery = null;
+        _originalQuery = String.Empty;
+        StateHasChanged();
+        await LoadInvestigationQueries();
+    }
+
+    private async Task DeleteInvestigationQuery(InvestigationQuery item)
+    {
+        await InvestigationService.DeleteInvestigationQuery(item);
+        await LoadInvestigationQueries();
+    }
+
+    public async Task BeginEdit(InvestigationInfo item)
+    {
+        var root = await InvestigationService.GetInvestigationConfigurationEditorRoot();
+        var configString = JsonSerializer.Serialize(await InvestigationService.GetInvestigationConfiguration(item));
+
+        var config = new ConfigurationBuilder()
+            .AddJsonStream(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(configString)))
+            .Build();
+
+        EditorOptions = new EditorOptions()
+        {
+            Title = "Investigation Configuration Editor",
+            Root = root
+        };
+
+        ValueStore = new EditorValueStore();
+        ValueStore.SetValuesFromConfiguration(config, EditorOptions.Root);
+        ValueStore.OnValueChanged = StateHasChanged;
+
+        editorDialog.BeginEdit(item);
+
+        await LoadInvestigationQueries();
+        await LoadInvestigationUsers();
+        await LoadUsersAndRoles();
+    }
+
+    private async Task LoadInvestigationQueries()
+    {
+        InvQueries = null;
+        if (editorDialog.EditingEntry?.InvestigationId != Guid.Empty)
+        {
+            InvQueries = await InvestigationService.GetInvestigationQueries(editorDialog.EditingEntry);
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadInvestigationUsers()
+    {
+        InvestigationUsers = null;
+        if (editorDialog.EditingEntry?.InvestigationId != Guid.Empty)
+        {
+            var resp = await UserService.QueryInvestigationUsersAsync(new QueryInvestigationUserRoles.Request { InvestigationId = editorDialog.EditingEntry.InvestigationId });
+            InvestigationUsers = resp.Results.ToList();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUsersAndRoles()
+    {
+        // This probably needs to be retrieved from the server in real-time.
+        // But for now, just load them once.
+        var usersResp = await UserService.QueryUsersAsync(new FEAR.Host.Domain.Api.Management.Security.QueryUsersRequest());
+        allUsers = usersResp.Results.ToList();
+        var rolesResp = await RoleService.QueryRolesAsync(new QueryRoles.Request());
+        allRoles = rolesResp.Results.ToList();
+    }
+
+    private FEAR.Blazor.Shared.Components.EditorDialog<InvestigationUserEditorModel> investigationUserDialog;
+
+    private record InvestigationUserEditorModel
+    {
+        public Guid UserId { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public bool IsNew => UserId == Guid.Empty;
+        public FEAR.Domain.Model.Authentication.User User { get; set; }
+        public Guid RoleId { get; set; } = Guid.Empty;
+    }
+
+    private void OpenAddInvestigationUser()
+    {
+        investigationUserDialog.BeginEdit(new InvestigationUserEditorModel());
+    }
+
+    private void EditInvestigationUser(QueryInvestigationUserRoles.InvestigationUserRoles row)
+    {
+        var model = new InvestigationUserEditorModel
+        {
+            UserId = row.UserId,
+            UserName = row.UserName,
+            User = allUsers.FirstOrDefault(u => u.UserId == row.UserId),
+            RoleId = row.RoleId
+        };
+        investigationUserDialog.BeginEdit(model);
+    }
+
+    private async Task SaveInvestigationUser(InvestigationUserEditorModel model)
+    {
+        var userId = model.User?.UserId ?? model.UserId;
+        if (userId == Guid.Empty)
+            return;
+        await UserService.AssignInvestigationRolesAsync(new AssignInvestigationRoles.Request
+        {
+            UserId = userId,
+            InvestigationId = editorDialog.EditingEntry.InvestigationId,
+            RoleId = model.RoleId
+        });
+        await LoadInvestigationUsers();
+    }
+
+    private Task<IEnumerable<FEAR.Domain.Model.Authentication.User>> SearchUsers(string value, CancellationToken cancellationToken)
+    {
+        // Need to make this query the server.
+        if (string.IsNullOrWhiteSpace(value))
+            return Task.FromResult(allUsers.AsEnumerable());
+        return Task.FromResult(allUsers.Where(u => (u.UserName?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false) || (u.Email?.Contains(value, StringComparison.OrdinalIgnoreCase) ?? false)));
+    }
+}

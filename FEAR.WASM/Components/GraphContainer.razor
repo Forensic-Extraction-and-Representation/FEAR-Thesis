@@ -1,0 +1,28 @@
+﻿@inherits EventSubscriberBase
+@using FEAR.WASM.Components.Graph
+@using FEAR.WASM.Domain
+@using FEAR.WASM.Interop
+@using FEAR.WASM.Model
+@using VDS.RDF
+
+<link rel="stylesheet" href="/css/components/graph-window.css" />
+
+@if (Legend != null && Legend.Any())
+{
+    <div id="d-block legend" class="legend">
+        @foreach (var legendItem in Legend)
+        {
+            <div class="legend-item">
+                <span class="legend-color" style="background-color:@legendItem.Color"></span>
+                <span>
+                    <span class="legend-shorthand" style="color:@legendItem.Color">@legendItem.Name</span>
+                    <br />
+                    <span class="legend-ontology">@legendItem.Ontology</span>
+                </span>
+            </div>
+        }
+    </div>
+}
+<div id="graph-canvas"></div>
+<DataTableContainer @ref="dataTableContainerRef" />
+<FEAR.WASM.Components.Dialogs.ColorMapDialog />

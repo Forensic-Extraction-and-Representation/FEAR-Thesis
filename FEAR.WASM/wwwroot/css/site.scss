@@ -1,0 +1,161 @@
+$fear-blue-1: #4290be;
+$fear-blue-2: #002943;
+$fear-blue-3: #22f6f7;
+$fear-pink-1: #f98197;
+$fear-pink-2:#f6a2c9;
+$fear-orange: #fd5c2f;
+$fear-green: #00ff00;
+
+$fear-rdf-purple: #c733ff;
+$fear-rdf-green: #13d674;
+$fear-rdf-yellow: #f9b605;
+
+html {
+    font-size: 14px;
+
+    @media (min-width: 768px) {
+        font-size: 14px;
+    }
+
+    position: relative;
+    height: 100%;
+}
+
+#app{
+    height:100%;
+}
+
+.status-icon{
+    width: 20px;
+    height: 20px;
+    margin-right:5px;
+    position:relative;
+    display:block;
+    float:left;
+    text-align:center;
+}
+
+.status-info {
+    color: #4290be;
+    font-size: 18px;
+    top: -2px;
+    position: relative;
+}
+
+.status-text {
+    position: relative;
+    top: 0px;
+    font-size: 15px;
+}
+
+.loader {
+    top:2px;
+    width: 20px;
+    height: 20px;
+    border: 2px dotted #4290be;
+    border-style: solid solid dotted dotted;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    animation: rotation 2s linear infinite;
+}
+
+.loader::after {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    border: 2px dotted #fd5c2f;
+    border-style: solid solid dotted;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: rotationBack 1s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotationBack {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(-360deg);
+    }
+} 
+
+/* Default Dark Mode */
+:root {    
+    --bg-color: #f4f4f4;
+    --text-color: #000000;
+    --button-bg: #ddd;
+    --button-text: black;
+    --button-hover: #bbb;
+    font-size: 0.8em;
+}
+
+/* Light Mode */
+.dark-theme {
+    --bg-color: #1e1e1e;
+    --text-color: #ffffff;
+    --button-bg: #444;
+    --button-text: white;
+    --button-hover: #666;
+}
+
+body {
+    //margin-bottom: 60px;
+    height: 100%;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Themed Buttons */
+button.default {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 6px 8px !important;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    transition: background 0.3s;
+
+    &:hover {
+        background-color: var(--button-hover);
+    }
+}
+
+/* Focus Styles */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Logo */
+.logo {
+    padding-top: 2px;
+    width: 100%;
+}
+
+.modal-header > button.close {
+    border:none;
+    background:none;
+}

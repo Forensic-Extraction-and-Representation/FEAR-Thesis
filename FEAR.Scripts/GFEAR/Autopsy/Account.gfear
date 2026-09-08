@@ -1,0 +1,19 @@
+﻿define codifier("TSK_ACCOUNT", "DFIO/Autopsy/Account");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, hostSha1, SourceFile, AccountType, ID);
+
+result Account <"/{HostSha1}/{ID}"> as aut:Account with {
+    create property aut:category as xsd:string with Category;
+    create property aut:sourceFile as xsd:string with SourceFile;
+    create property aut:id as xsd:string with ID;
+    create property aut:accountType as xsd:string with AccountType;
+
+    create entity suspectHost as aut:Host with {
+        create property aut: hostSha1 as xsd:string with HostSha1;
+    } identified by required aut:hostSha1;
+
+    create property aut:sourceHost with entity suspectHost;
+} identified by required aut:id, required aut:accountType, required entity aut:sourceHost suspectHost;

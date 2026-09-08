@@ -1,0 +1,52 @@
+﻿@inherits EventSubscriberBase
+@using MudBlazor
+
+<MudPaper Elevation="2">
+    <MudToolBar WrapContent="false">
+        <MudToggleGroup T="string" Value="_selectedInputType" ValueChanged=ChangeInputType Color="Color.Primary" Class="me-2">
+            <MudToggleItem Value="@("query")">
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Filled.Code" />
+            </MudToggleItem>
+            <MudToggleItem Value="@("agent")">
+                <MudIcon Size="Size.Small" Icon="@Icons.Material.Outlined.DeveloperBoard" />
+            </MudToggleItem>
+        </MudToggleGroup>
+
+        @if (_selectedInputType == "agent")
+        {
+            <MudStack Row Class="me-2">
+                <MudTooltip Text="Include the current graph in the agent request">
+                    <MudButton IconColor="Color.Success" Color=Color.Primary Variant="@(_checkOptions["IncludeGraph"] ? Variant.Filled : Variant.Outlined)"
+                               StartIcon="@(_checkOptions["IncludeGraph"] ? Icons.Material.Outlined.CheckCircle : "")" OnClick="@(_ => ToggleOption("IncludeGraph"))">
+                        Include Graph
+                    </MudButton>
+                </MudTooltip>
+                <MudTooltip Text="Query help">
+                    <MudButton IconColor="Color.Success" Color=Color.Primary Variant="@(_checkOptions["QueryHelp"] ? Variant.Filled : Variant.Outlined)"
+                               StartIcon="@(_checkOptions["QueryHelp"] ? Icons.Material.Outlined.CheckCircle : "")" OnClick="@(_ => ToggleOption("QueryHelp"))">
+                        Query Help
+                    </MudButton>
+                </MudTooltip>
+            </MudStack>
+        }
+
+        @if (_selectedInputType == "query")
+        {
+            <MudStack Row Class="me-2">
+                <MudTooltip Text="Open shared queries dialog">
+                    <MudButton StartIcon="@Icons.Material.Outlined.FolderSpecial" Color=Color.Primary Variant=Variant.Outlined data-bs-toggle="modal" data-bs-target="#shared-queries-modal">
+                        Shared Queries
+                    </MudButton>
+                </MudTooltip>
+                @*
+                <MudTooltip Text="Add the result as a layer to the current graph">
+                    <MudButton IconColor="Color.Success" Color=Color.Primary Variant="@(_checkOptions["AddAsLayer"] ? Variant.Filled : Variant.Outlined)"
+                               StartIcon="@(_checkOptions["AddAsLayer"] ? Icons.Material.Outlined.CheckCircle : "")" OnClick="@(_ => ToggleOption("AddAsLayer"))">
+                        Add as Layer
+                    </MudButton>
+                </MudTooltip>
+                *@
+            </MudStack>
+        }
+    </MudToolBar>
+</MudPaper>

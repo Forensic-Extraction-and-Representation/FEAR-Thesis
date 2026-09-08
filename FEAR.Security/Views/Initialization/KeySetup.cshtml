@@ -1,0 +1,70 @@
+﻿@using Microsoft.AspNetCore.Mvc;
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="text-center">Key Submission</h2>
+                @using (Html.BeginForm("EncryptData", "Initialization", FormMethod.Post))
+                {
+                    <div class="form-group">
+                        <label for="keyName">Key Name</label>
+                        <input type="text" name="keyName" class="form-control" id="keyName" placeholder="Enter Key Name">
+                    </div>
+                    <div class="key-pairs">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="keyIdentifier">Key Identifier</label>
+                                    <input type="text" name="keyIdentifiers[]" class="form-control" id="keyIdentifier" placeholder="Enter Key Identifier">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="keyValue">Key Value</label>
+                                    <input type="password" name="keyValues[]" id="keyValue" class="form-control" placeholder="Enter Key Value">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="autoGenerateKey" name="autoGenerateKey" value="true" checked>
+                        <label class="form-check-label" for="autoGenerateKey">Auto-generate key</label>
+                    </div>
+                    <div class="form-group" id="keyValueTextarea" style="display:none;">
+                        <label for="keyValue">Key Value (Manual)</label>
+                        <textarea name="keyValueTextarea" class="form-control" placeholder="Enter Key Value (Manual)"></textarea>
+                    </div>
+                    <button type="button" class="btn btn-success" id="addKeyPair">Add Key Pair</button>
+                    <button type="submit" class="btn btn-danger btn-block">Submit</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('autoGenerateKey').addEventListener('change', function () {
+            const keyValueTextarea = document.getElementById('keyValueTextarea');
+            if (this.checked) {
+                keyValueTextarea.style.display = 'none';
+            } else {
+                keyValueTextarea.style.display = 'block';
+            }
+        });
+
+        document.getElementById('addKeyPair').addEventListener('click', function () {
+            const keyPairContainer = document.querySelector('.key-pairs');
+            const keyPairTemplate = keyPairContainer.querySelector('.row:last-child').cloneNode(true);
+
+            keyPairTemplate.querySelector('#keyIdentifier').value = '';
+            keyPairTemplate.querySelector('#keyValue').value = '';
+
+            keyPairContainer.appendChild(keyPairTemplate);
+        });
+    </script>
+</body>
+</html>

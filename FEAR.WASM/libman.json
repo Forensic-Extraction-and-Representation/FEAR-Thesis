@@ -1,0 +1,46 @@
+{
+  "version": "3.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "sanitize-html@1.27.5",
+      "destination": "wwwroot/lib/sanitize-html/"
+    },
+    {
+      "library": "marked@16.0.0",
+      "destination": "wwwroot/lib/marked/"
+    },
+    {
+      "library": "bootstrap-icons@1.13.1",
+      "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "bootstrap@5.3.7",
+      "destination": "wwwroot/lib/bootstrap/"
+    },
+    {
+      "library": "bootstrap-modal@2.2.6",
+      "destination": "wwwroot/lib/bootstrap-modal/"
+    },
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/lib/jquery/"
+    },
+    {
+      "library": "prism@9000.0.1",
+      "destination": "wwwroot/lib/prism/"
+    },
+    {
+      "library": "cytoscape@3.32.0",
+      "destination": "wwwroot/lib/cytoscape/"
+    },
+    {
+      "library": "sigma.js@3.0.2",
+      "destination": "wwwroot/lib/sigma.js/"
+    },
+    {
+      "library": "jqueryui@1.14.1",
+      "destination": "wwwroot/lib/jqueryui/"
+    }
+  ]
+}

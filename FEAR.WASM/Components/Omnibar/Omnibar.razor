@@ -1,0 +1,74 @@
+﻿@inherits EventSubscriberBase
+@using System.Threading.Tasks
+@using FEAR.WASM.Services
+@using MudBlazor;
+@inject IJSRuntime JS
+
+<MudThemeProvider @ref="_mudThemeProvider" IsDarkMode="_isDarkMode" />
+
+<div class="omnibar container-fluid">
+    <div class="col-10 col-md-7">
+        <div class="input-group @(_uiState.OmnibarContentVisible ? "omnibar-content-visible" : "omnibar-content-hidden")" id="omnibar-header" @onclick="() => ToggleOmnibar()">
+            <OmnibarStatusComponent />
+            <button class="input-group-append btn btn-secondary" type="button" id="toggle-omnibar-content">
+                <span class="bi @(_uiState.OmnibarContentVisible ? "bi-box-arrow-up-left" : "bi-box-arrow-down-right")"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="omnibar-content">
+        <div class="@(_uiState.BodyWrapperDisplayClass) omnibar-body-wrapper flex-column" id="omnibar-body-wrapper">
+            <MessageHistoryComponent />
+            <MudGrid Spacing="0" Class="flex-grow-0">
+                <MudItem xs="12">
+                    <InputToolbar />
+                    @if (_uiState.RequestType == "agent")
+                    {
+                        <MudStack>
+                            <MudStack>
+                                <textarea spellcheck="false" style="height:140px; border:0;
+                                background: transparent; outline:none; resize: none; field-sizing: content; font-size: 14px;
+                                padding: 0.4em 0.8em; font-family: monospace; letter-spacing: normal; line-height: 1.5;
+                                tab-size: 2; top: 0; left: 0; display: block; color: inherit;"
+                                          @bind=ChatText
+                                          @bind:event="oninput"
+                                          @onkeydown=HandleKeyDown></textarea>
+                            </MudStack>
+                            <MudStack Row StretchItems="StretchItems.None" Spacing="2">
+                                <MudSpacer />
+                                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Style="" id="omnibar-send-button" @onclick="SendChatAsync">send</MudButton>
+                            </MudStack>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudStack>
+                            <MudStack>
+                                <FEAR.Blazor.Shared.Components.CodeEditor @bind-CodeText="QueryText" Language="sparql" />
+                            </MudStack>
+                            <MudStack Row StretchItems="StretchItems.None" Spacing="2">
+                                <MudSpacer />
+                                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Style="" id="omnibar-send-button" @onclick="SendQueryAsync">send</MudButton>
+                            </MudStack>
+                        </MudStack>
+                    }
+                </MudItem>
+            </MudGrid>
+        </div>
+    </div>
+</div>
+<FEAR.WASM.Components.Dialogs.SharedQueriesDialog />
+
+@code {
+    private MudThemeProvider _mudThemeProvider;
+    private bool _isDarkMode;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemDarkModeAsync();
+
+            StateHasChanged();
+        }
+    }
+}

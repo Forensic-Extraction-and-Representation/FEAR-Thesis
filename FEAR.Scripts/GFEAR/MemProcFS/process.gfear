@@ -1,0 +1,28 @@
+define codifier("v_process", "DFIO/MemProcFS/v_process");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("https://purl.org/ontology/memprocfs/", "mpfs");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(pid, ppid, sz_name, sz_path, sz_user, time_create, time_exit, HostSha1);
+
+result Process as mpfs:Process with {
+	create property mpfs:pid as xsd:integer with pid;
+	create property mpfs:processName as xsd:string with sz_name;
+	create property mpfs:processPath as xsd:string with sz_path;
+	create property mpfs:processUser as xsd:string with sz_user;
+	create property mpfs:timeCreated as xsd:dateTime with time_create;
+	create property mpfs:timeExisted as xsd:dateTime with time_exit;
+	
+    create entity suspectHost as aut:Host with {
+        create property aut:hostSha1 as xsd:string with HostSha1;
+    } identified by required aut:hostSha1;
+
+	create entity parentProcess as mpfs:Process with {
+		create property mpfs:pid as xsd:integer with ppid;
+		create property aut:sourceHost with entity suspectHost;
+	} identified by required mpfs:pid, required entity aut:sourceHost suspectHost;
+
+	create property mpfs:parentProcess with entity parentProcess;
+    create property aut:sourceHost with entity suspectHost;
+} identified by required mpfs:pid, required entity aut:sourceHost suspectHost;

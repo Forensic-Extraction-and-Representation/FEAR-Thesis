@@ -1,0 +1,56 @@
+@using MudBlazor
+
+<div class="pa-2">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6">Permissions</MudText>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.subtitle2">Approved Actions</MudText>
+            <MudSelect T="Guid" MultiSelection="true" SelectedValues="_approved" SelectedValuesChanged="OnApprovedChanged" Dense="true" FullWidth="true">
+                @foreach (var action in AllActions)
+                {
+                    <MudSelectItem T="Guid" Value="@action.Id">@action.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText Typo="Typo.subtitle2">Denied Actions</MudText>
+            <MudSelect T="Guid" MultiSelection="true" SelectedValues="_denied" SelectedValuesChanged="OnDeniedChanged" Dense="true" FullWidth="true">
+                @foreach (var action in AllActions)
+                {
+                    <MudSelectItem T="Guid" Value="@action.Id">@action.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<FEAR.Blazor.Shared.Components.Security.PermissionActionOption> AllActions { get; set; } = Enumerable.Empty<FEAR.Blazor.Shared.Components.Security.PermissionActionOption>();
+    [Parameter] public IEnumerable<Guid> ApprovedActionIds { get; set; } = Enumerable.Empty<Guid>();
+    [Parameter] public IEnumerable<Guid> DeniedActionIds { get; set; } = Enumerable.Empty<Guid>();
+    [Parameter] public EventCallback<IEnumerable<Guid>> ApprovedActionIdsChanged { get; set; }
+    [Parameter] public EventCallback<IEnumerable<Guid>> DeniedActionIdsChanged { get; set; }
+
+    private IEnumerable<Guid> _approved = Enumerable.Empty<Guid>();
+    private IEnumerable<Guid> _denied = Enumerable.Empty<Guid>();
+
+    protected override void OnParametersSet()
+    {
+        _approved = ApprovedActionIds ?? Enumerable.Empty<Guid>();
+        _denied = DeniedActionIds ?? Enumerable.Empty<Guid>();
+    }
+
+    private Task OnApprovedChanged(IEnumerable<Guid> values)
+    {
+        _approved = values ?? Enumerable.Empty<Guid>();
+        return ApprovedActionIdsChanged.InvokeAsync(_approved);
+    }
+
+    private Task OnDeniedChanged(IEnumerable<Guid> values)
+    {
+        _denied = values ?? Enumerable.Empty<Guid>();
+        return DeniedActionIdsChanged.InvokeAsync(_denied);
+    }
+}

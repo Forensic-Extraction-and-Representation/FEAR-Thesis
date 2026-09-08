@@ -1,0 +1,32 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using FEAR.Domain.Model.InvestigationStore
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Welcome", Icons.Material.Filled.Start)]
+
+<MudText Typo="Typo.h5" Class="mb-4">Welcome</MudText>
+
+<MudText Class="mb-4">
+    This wizard will guide you through the process of @(Wizard.IsEditing ? "editing a" : "creating a new") case.
+</MudText>
+
+<MudText Class="mb-4">
+    The wizard will guide you through:
+    <ul>
+        <li>Entering basic case details</li>
+        <li>Configuring directories for the case. These directories are where the FEAR scripts and libraries are stored for the case.</li>
+        <li>Configuring graph settings for the case. If the graph is remote (e.g. GraphDB or Apache Jena) connection detils will be required.</li>
+        <li>Configuring script repositories for the case. <br/>
+            This will include GFEAR and RFEAR Scripts&mdash;Written in the Graph-Codify FEAR and Ruleset FEAR languages</li>
+        <li>Configuring library repositories for the case<br/>
+            This will include GFEAR and RFEAR Scripts Pre-Compiled into a .NET Assembly. You will also be able to supply pre-compiled CFEAR libraries&mdash;These are libraries that are only pre-compiled .NET assemblies that can be written in C#.
+        </li>
+        <li>
+            Configuring package repositories for the case. These are .zip files that contain packages GFEAR and RFEAR scripts that will be extracted and compiled for the case.
+        </li>
+    </ul>
+</MudText>
+@code {
+    public override bool RequiredValidation => false;
+}

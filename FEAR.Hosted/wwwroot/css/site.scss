@@ -1,0 +1,78 @@
+html {
+    font-size: 14px;
+
+    @media (min-width: 768px) {
+        font-size: 14px;
+    }
+
+    position: relative;
+    height: 100%;
+}
+
+
+/* Default Dark Mode */
+:root {    
+    --bg-color: #f4f4f4;
+    --text-color: #000000;
+    --button-bg: #ddd;
+    --button-text: black;
+    --button-hover: #bbb;
+    font-size: 0.8em;
+}
+
+/* Light Mode */
+.dark-theme {
+    --bg-color: #1e1e1e;
+    --text-color: #ffffff;
+    --button-bg: #444;
+    --button-text: white;
+    --button-hover: #666;
+}
+
+body {
+    margin-bottom: 60px;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Themed Buttons */
+button.default {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 6px 8px !important;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    transition: background 0.3s;
+
+    &:hover {
+        background-color: var(--button-hover);
+    }
+}
+
+/* Focus Styles */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Logo */
+.logo {
+    padding-top: 2px;
+    width: 100%;
+}
+
+.modal-header > button.close {
+    border:none;
+    background:none;
+}
+
+#main-container {
+    height:100%;
+}

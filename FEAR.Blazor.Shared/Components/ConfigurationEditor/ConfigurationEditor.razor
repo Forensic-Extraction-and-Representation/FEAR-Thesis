@@ -1,0 +1,58 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using Microsoft.Extensions.Configuration
+@using MudBlazor
+
+<MudGrid Spacing="2">
+    <MudItem xs="12" Class="py-2">
+        @if (!_loading)
+        {
+            @if (!string.IsNullOrWhiteSpace(EditorOptions.Title))
+            {
+                <MudText Typo="Typo.subtitle2">@EditorOptions.Title</MudText>
+            }
+            <MudForm @ref="form" @bind-IsValid="@success" Spacing="0">
+                <MudGrid Spacing="2">
+                    @if (EditorOptions.Root.IsArray)
+                    {
+                        <EditorFieldList ValueStore="ValueStore" Fields="new[] { EditorOptions.Root.Fields.First() }" />
+                    }
+                    else
+                    {
+                        <EditorFieldList ValueStore="ValueStore" Fields="EditorOptions.Root.Fields" />
+                    }
+                </MudGrid>
+            </MudForm>
+        }
+        <MudOverlay Visible="_loading" DarkBackground="true" Absolute="true">
+            <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+        </MudOverlay>
+
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    [Parameter] public EditorOptions EditorOptions { get; set; }
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+
+    private MudForm form;
+    private bool success;
+    private bool _loading => EditorOptions == null || ValueStore == null;
+
+    public class SampleConfig
+    {
+        public class RepositoryConfig
+        {
+            public string[] GFEAR { get; set; }
+            public string[] OtherRepo { get; set; }
+        }
+
+        public string WorkingDirectory { get; set; }
+        public RepositoryConfig Repositories { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+    }
+}

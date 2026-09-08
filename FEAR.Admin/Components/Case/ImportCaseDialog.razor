@@ -1,0 +1,169 @@
+@using FEAR.Host.Domain.Api.Investigation
+@using FEAR.Domain.Model
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Forms
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.FileDownload" />
+            <MudText Typo="Typo.h6">Import Case</MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudPaper Elevation="0" Class="pa-2" Style="max-height: 640px; overflow-y: auto;">
+
+            @* ── Step 1: File selection ── *@
+            @if (_step == ImportStep.SelectFile)
+            {
+                <MudText Class="mb-3">Select a case export file (<code>.json</code>) to import.</MudText>
+                <MudStack Row="false" Spacing="2">
+                    <InputFile id="importFileInput" OnChange="OnFileSelected" accept=".json" style="display:none" />
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.AttachFile"
+                               OnClick="@(() => _clickFileInput())">
+                        Choose File
+                    </MudButton>
+                    @if (!string.IsNullOrEmpty(_selectedFileName))
+                    {
+                        <MudText Typo="Typo.caption">Selected: @_selectedFileName</MudText>
+                    }
+                    @if (!string.IsNullOrEmpty(_fileError))
+                    {
+                        <MudAlert Severity="Severity.Error">@_fileError</MudAlert>
+                    }
+                </MudStack>
+            }
+
+            @* ── Step 2: Import message ── *@
+            else if (_step == ImportStep.ShowMessage)
+            {
+                <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Message" Class="mb-4">
+                    <MudText Typo="Typo.subtitle2" Class="mb-1">Message from the case author:</MudText>
+                    <MudText Style="white-space: pre-wrap;">@_package!.Manifest.ImportMessage</MudText>
+                </MudAlert>
+                <MudText Typo="Typo.body2">Review the message above, then click <strong>Next</strong> to continue.</MudText>
+            }
+
+            @* ── Step 3: Review sections ── *@
+            else if (_step == ImportStep.ReviewSections)
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-2">What will be imported</MudText>
+                <MudText Typo="Typo.body2" Class="mb-3">
+                    The following sections are present in this export and will be applied to the new case.
+                    Sections that were not included will use default values.
+                </MudText>
+
+                @foreach (var section in _allSections)
+                {
+                    var included = _package!.Manifest.IncludedSections.Contains(section.Key);
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-1">
+                        <MudIcon Icon="@(included ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RemoveCircle)"
+                                 Color="@(included ? Color.Success : Color.Default)" Size="Size.Small" />
+                        <MudText Typo="Typo.body2">@section.Value</MudText>
+                        @if (!included)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">(defaults will be used)</MudText>
+                        }
+                    </MudStack>
+                }
+            }
+
+            @* ── Step 4: Supply missing secrets ── *@
+            else if (_step == ImportStep.SupplySecrets)
+            {
+                <MudText Typo="Typo.subtitle1" Class="mb-1">Missing Agent Secrets</MudText>
+                <MudText Typo="Typo.body2" Class="mb-3">
+                    The following secret values were not included in the export. Please supply them to complete the import.
+                </MudText>
+                @foreach (var secret in _missingSecrets)
+                {
+                    <MudTextField @bind-Value="secret.Value"
+                                  Label="@($"{secret.AgentKey} – {secret.FieldName}")"
+                                  InputType="InputType.Password"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Class="mb-2" />
+                }
+            }
+
+            @* ── Step 5: Confirm ── *@
+            else if (_step == ImportStep.Confirm)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-4">
+                    A new case named <strong>@_package!.CaseInfo.Name</strong> will be created.
+                    This does not overwrite any existing case.
+                </MudAlert>
+                <MudText Typo="Typo.body2">Click <strong>Import</strong> to proceed.</MudText>
+            }
+
+            @* ── Step 6: Done ── *@
+            else if (_step == ImportStep.Done)
+            {
+                <MudAlert Severity="Severity.Success">
+                    @_resultMessage
+                </MudAlert>
+            }
+
+            @if (_isBusy)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-4" />
+            }
+
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudSpacer />
+        <MudButton OnClick="Cancel"
+                   Color="Color.Default"
+                   Variant="Variant.Outlined"
+                   Disabled="_isBusy">
+            @(_step == ImportStep.Done ? "Close" : "Cancel")
+        </MudButton>
+
+        @if (_step == ImportStep.SelectFile)
+        {
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="NextFromSelectFile"
+                       Disabled="@(_package == null || _isBusy)"
+                       StartIcon="@Icons.Material.Filled.NavigateNext">
+                Next
+            </MudButton>
+        }
+        else if (_step == ImportStep.ShowMessage || _step == ImportStep.ReviewSections)
+        {
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="GoToNextStep"
+                       Disabled="_isBusy"
+                       StartIcon="@Icons.Material.Filled.NavigateNext">
+                Next
+            </MudButton>
+        }
+        else if (_step == ImportStep.SupplySecrets)
+        {
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="GoToNextStep"
+                       Disabled="@(!SecretsComplete || _isBusy)"
+                       StartIcon="@Icons.Material.Filled.NavigateNext">
+                Next
+            </MudButton>
+        }
+        else if (_step == ImportStep.Confirm)
+        {
+            <MudButton Color="Color.Success"
+                       Variant="Variant.Filled"
+                       OnClick="DoImport"
+                       Disabled="_isBusy"
+                       StartIcon="@Icons.Material.Filled.FileDownload">
+                Import
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>

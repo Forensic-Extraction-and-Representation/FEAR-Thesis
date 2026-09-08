@@ -1,0 +1,114 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using MudBlazor
+@using FEAR.Blazor.Shared.Components.Forms
+
+<MudItem xs="12">
+    @if (Field.IsDictionary)
+    {
+        <EditorDictionary Field="@Field" PropertyPath="@($"{PropertyPath}")"></EditorDictionary>
+    }
+    else
+    {
+        @if (Field.IsArray)
+        {
+            <MudText Typo="Typo.subtitle2" Class="mb-2">@Field.DisplayName</MudText>
+            @if (!string.IsNullOrWhiteSpace(Field.Description))
+            {
+                <MudText Typo="Typo.caption" Class="mb-2">@Field.Description</MudText>
+            }
+
+            if (Field.IsBoundedList)
+            {
+                <MudAutocomplete T="object"
+                                 Label=@($"Add {Field.DisplayName}")
+                                 ShrinkLabel
+                                 Variant="Variant.Text"
+                                 FullWidth="true"
+                                 Immediate="true"
+                                 Dense="true"
+                                 Clearable="true"
+                                 Value="@AutoCompletValue"
+                                 ValueChanged="(t)=> AutoCompletValue = t"
+                                 SearchFunc="BoundedListSearch"
+                                 ToStringFunc="item => item?.ToString() ?? string.Empty"
+                                 Adornment="@Adornment.End"
+                                 AdornmentIcon="@Icons.Material.Filled.Add"
+                                 AdornmentAriaLabel="Add Entry"
+                                 OnAdornmentClick="@(() => AddItem(AutoCompletValue))" />
+            }
+
+            <EditableList T="object"
+                          Label=@($"Add {Field.DisplayName}")
+                          ShrinkLabel
+                          WithEntryField=@(!Field.IsBoundedList)
+                          GetItems="() => ValueStore.GetArrayValues(PropertyPath) ?? new List<object>()"
+                          OnItemAdded="(item => ValueStore.AddArrayElement(PropertyPath, item))"
+                          OnItemDeleted="(item => ValueStore.RemoveArrayElement(PropertyPath, item))"
+                          Variant="Variant.Text"
+                          FullWidth="true"
+                          Immediate="true" />
+        }
+        else
+        {
+            if (Field.IsBoundedList)
+            {
+                <MudAutocomplete T="object"
+                                 Label=@($"{Field.DisplayName}")
+                                 ShrinkLabel
+                                 Variant="Variant.Text"
+                                 FullWidth="true"
+                                 Immediate="true"
+                                 Dense="true"
+                                 Clearable="true"
+                                 Value="ValueStore.GetValue<object>(PropertyPath)"
+                                 ValueChanged="(t)=> ValueStore.SetValue(PropertyPath, t)"
+                                 SearchFunc="BoundedListSearch"
+                                 ToStringFunc="item => item?.ToString() ?? string.Empty" />
+            }
+            else
+            {
+                <FieldComponent ValueStore="ValueStore" Field="Field" PropertyPath="@PropertyPath" />
+            }
+        }
+    }
+</MudItem>
+
+@code {
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+    [Parameter] public required FormField Field { get; set; }
+    [Parameter] public bool IncludeDivider { get; set; } = true;
+    [Parameter] public string PropertyPath { get; set; } = "";
+
+    private object AutoCompletValue { get; set; }
+
+    private void AddItem(object item)
+    {
+        if (item != null)
+        {
+            ValueStore.AddArrayElement(PropertyPath, item);
+            AutoCompletValue = null;
+        }
+    }
+
+    private async Task<IEnumerable<object>> BoundedListSearch(string value, CancellationToken token)
+    {
+        if (Field.IsBoundedList)
+        {
+            IEnumerable<FormFieldBoundingOption.FormOptionValue> result = new List<FormFieldBoundingOption.FormOptionValue>();
+            result = Field.BoundingOption.BoundedList(ValueStore);
+            var existingItems = ValueStore.GetArrayValues(PropertyPath);
+
+            if (existingItems != null && existingItems.Any())
+            {
+                result = result.Where(item => !existingItems.Contains(item.Value));
+            }
+
+            if (Field.IsArray)
+                return result.Where(item => string.IsNullOrWhiteSpace(value) || item.Value.ToString().Contains(value, StringComparison.InvariantCultureIgnoreCase)).Select(t => t.Value);
+            else
+                return result.Select(t => t.Value);
+        }
+
+        throw new InvalidOperationException("Field is not a bounded list or bounding options are not set correctly.");
+    }
+}

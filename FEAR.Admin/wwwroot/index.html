@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FEAR.Admin</title>
+    <base href="/">
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="FEAR.Admin.styles.css" rel="stylesheet" />
+
+    <script src="_content/FEAR.Blazor.Shared/lib/prism/prism.js"></script>
+    <link href="/lib/fontawesome/css/all.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/polyfill/v2/polyfill.min.js?features=Promise,fetch"></script>
+    <script src="/lib/sanitize-html/sanitize-html.js"></script>
+
+    <script src="_content/FEAR.Blazor.Shared/js/prism-interop.js"></script>
+    <script src="_content/FEAR.Blazor.Shared/js/bootstrap-interop.js"></script>
+    <script src="_content/FEAR.Blazor.Shared/js/timeout-callback-interop.js"></script>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <!-- Important: Increment the version parameter whenever you update MudBlazor to prevent caching issues -->
+    <link href="/_content/MudBlazor/MudBlazor.min.css?v=1" rel="stylesheet" />
+    <script src="/_content/MudBlazor/MudBlazor.min.js?v=1"></script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="/_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script src="/_framework/blazor.webassembly.js"></script>
+    <script>
+        window.fearDownloadJson = function (filename, content) {
+            var blob = new Blob([content], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+
+</html>

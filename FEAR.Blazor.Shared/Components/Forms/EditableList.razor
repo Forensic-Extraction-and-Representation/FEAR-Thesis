@@ -1,0 +1,117 @@
+﻿@using MudBlazor
+@typeparam T
+@inherits MudDebouncedInput<T>
+
+    @if (WithEntryField)
+{
+    <MudPaper>
+        <MudTextField T="string"
+                      @ref="InputReference"
+                      @attributes="UserAttributes"
+                      Label="@Label"
+                      InputType="@InputType"
+                      InputMode="@InputMode"
+                      Lines="1"
+                      MaxLines="1"
+                      AutoGrow="false"
+                      Style="@Style"
+                      Variant="@Variant"
+                      Typo="@Typo"
+                      TextUpdateSuppression="@TextUpdateSuppression"
+                      Value="@Text"
+                      ValueChanged="(s) => SetTextAsync(s)"
+                      Placeholder="@Placeholder"
+                      Disabled=@GetDisabledState()
+                      Underline="@Underline"
+                      ReadOnly="@GetReadOnlyState()"
+                      MaxLength="@MaxLength"
+                      Adornment="@Adornment.End"
+                      AdornmentText="@AdornmentText"
+                      AdornmentIcon="@Icons.Material.Filled.Add"
+                      AdornmentColor="@AdornmentColor"
+                      AdornmentAriaLabel="Add Entry"
+                      IconSize="@IconSize"
+                      OnAdornmentClick="@(() => AddItem(Text))"
+                      Error="@Error"
+                      ErrorId="@ErrorId"
+                      HelperId="@GetHelperId()"
+                      HelperText="@HelperText"
+                      Immediate="@Immediate"
+                      Margin="@Margin"
+                      OnBlur="@OnBlurredAsync"
+                      OnKeyDown="@InvokeKeyDownAsync"
+                      OnInternalInputChanged="OnChange"
+                      OnKeyUp="@InvokeKeyUpAsync"
+                      KeyDownPreventDefault="KeyDownPreventDefault"
+                      KeyUpPreventDefault="KeyUpPreventDefault"
+                      HideSpinButtons="true"
+                      Clearable="@Clearable"
+                      ClearIcon="@ClearIcon"
+                      OnClearButtonClick="@OnClearButtonClick"
+                      Pattern="@Pattern"
+                      ShrinkLabel
+                      InputId="@InputElementId"
+                      Required=false />
+    </MudPaper>
+}
+@if (GetItems != null)
+{
+    var items = GetItems();
+    <MudPaper Class="my-2">
+        @if (items.Count() > 0)
+        {
+                
+            <MudList T="T">
+                @foreach (var item in GetItems())
+                {
+                    <MudListItem T="T">
+                        @item
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Edge="Edge.End" Size="Size.Small" Style="position: absolute; right: 3px;" OnClick="() => { OnItemDeleted.InvokeAsync(item); StateHasChanged(); }" />
+                    </MudListItem>
+                }
+            </MudList>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Class="pa-2">No items added</MudAlert>
+        }
+    </MudPaper>
+}
+else
+{
+    <MudAlert Severity="Severity.Warning" Class="pa-2">Can't get items</MudAlert>
+}
+@code {
+    [Parameter] public bool WithEntryField { get; set; } = true;
+    [Parameter] public Func<IEnumerable<T>> GetItems { get; set; }
+    [Parameter] public EventCallback<string> OnItemAdded { get; set; }
+    [Parameter] public EventCallback<T> OnItemDeleted { get; set; }
+
+    public class StringConverter : MudBlazor.Converter<T, string>
+    {
+        public StringConverter()
+        {
+            SetFunc = item => item?.ToString() ?? string.Empty;
+            GetFunc = str => (T)Convert.ChangeType(str, typeof(T));
+        }
+    }
+
+    public EditableList()
+    {
+        SetConverter(new StringConverter());
+    }
+
+    private async Task AddItem(string item)
+    {
+        if (item == null || item.Equals(default(T)))
+            return;
+        if (OnItemAdded.HasDelegate)
+        {
+            await OnItemAdded.InvokeAsync(item);
+        }
+
+        Text = string.Empty;
+        await SetTextAsync(string.Empty);
+        StateHasChanged();
+    }
+}

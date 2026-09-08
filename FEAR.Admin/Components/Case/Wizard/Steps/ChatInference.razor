@@ -1,0 +1,209 @@
+﻿@using FEAR.Blazor.Shared.Components.Wizards
+@using FEAR.Domain.Agents
+@using FEAR.Host.Domain.Api.Investigation
+@using MudBlazor
+@using System.ComponentModel.DataAnnotations
+@using FEAR.Domain.Model.InvestigationStore
+@inherits WizardStep<CaseWizardController, CaseWizardModel>
+@attribute [WizardStep("Agents", Icons.Material.Filled.Webhook)]
+
+<MudText Typo="Typo.h5" Class="mb-4">Agents</MudText>
+
+<MudForm Model="@Model" @ref="InternalMudForm" IsValidChanged="(v) => UpdateValidationState(v)">
+    <MudText Class="mb-4">
+        When enabled, the system will utilize agents for processing submissions from the FEAR interface and for agent processing. This allows you to configure a chain of agents with different capabilities and pass data between the agents for more complex processing of agent tasks.
+    </MudText>
+    <MudCheckBox @bind-Value="Model.Configuration.AgentConfiguration.Enabled"
+                 Label="Enable Agents"  
+                 Variant="Variant.Outlined"
+                 Margin="Margin.Dense"
+                 Immediate="true" />
+
+    @if (Model.Configuration.AgentConfiguration.Enabled)
+    {
+        if (AgentDefinitions.Count > 0)
+        {
+            <MudText Class="mb-4">
+                <p>Select the default agent to use for agent processing. This is used by the system when processing submissions through the FEAR interface, and will also be used as a fallback should a requested agent not be found.</p>
+                <p>
+                    Other agents can be requested from within CFEAR libraries via the <span style="font-family: monospace;">ExecutionServiceProvider.AgentProvider.GetAgentInterface(string)</span> method of the request
+                    to <span style="font-family: monospace;">Execute</span> a <span style="font-family: monospace;">ResultCollectorBase</span>.
+                </p>
+            </MudText>
+
+            <MudSelect T="string"
+                       @bind-Value="Model.Configuration.AgentConfiguration.DefaultAgent"
+                       Label="Default Agent"
+                       Required="@Model.Configuration.AgentConfiguration.Enabled"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Validation="@(() => Model.Configuration.AgentConfiguration.Enabled && string.IsNullOrEmpty(Model.Configuration.AgentConfiguration.DefaultAgent) ? "Default Agent is required" : null)"
+                       Immediate="true">
+                @foreach (var agentDef in AgentDefinitions.Where(t => t.Key != "QueryHelper"))
+                {
+                    <MudSelectItem Value="@agentDef.Key">@agentDef.Key</MudSelectItem>
+                }
+            </MudSelect>
+        }
+
+        <MudGrid>
+            <MudItem xs="12" md="6" Style="display:flex">
+                <MudCard Class="xs-12 s-6">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Agent Configuration</MudText>
+                        <MudText Class="mb-2">
+                            Add a new agent to configure its settings for agent processing.
+                        </MudText>
+                        <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Outlined" OnClick="AddAgent">Add Agent</MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @if (!AgentDefinitions.ContainsKey("QueryHelper"))
+            {
+                <MudItem xs="12" md="6" Style="display:flex">
+                    <MudCard Class="xs-12 md-6">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">Query Helper Agent</MudText>
+                            <MudText Class="mb-2">
+                                The "Query Helper" is the agent that is used to assist with query generation from the FEAR interface. This should be configured to a model that performs well at understanding and generating SPARQL queries.
+                            </MudText>
+                            <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => AddAgent("QueryHelper", "Agent to help generate SPARQL Queries", "<Prompt>"))">Add Query Helper Agent</MudButton>
+                      
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (AgentDefinitions.Count == 0)
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">
+                No agents configured. Please add an agent to enable agent processing. 
+            </MudAlert>
+        }
+        else
+        {
+            foreach (var agentDef in AgentDefinitions)
+            {
+                <MudPaper Class="my-4 pa-2" Style="background-color: var(--mud-palette-background-default);">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudText Typo="Typo.h6">@agentDef.Key</MudText>
+                        <MudSpacer />
+                        <MudButton ButtonType="ButtonType.Button" Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => EditAgent(agentDef.Key))">Edit</MudButton>
+                        <MudButton ButtonType="ButtonType.Button" Color="Color.Error" OnClick="@(() => RemoveAgent(agentDef.Key))">Remove</MudButton>
+                    </MudStack>
+                </MudPaper>
+            }
+        }
+    }
+</MudForm>
+
+    @code {
+    [Inject]
+    protected IDialogService DialogService { get; set; }
+
+    private string AgentChainEntry;
+
+    protected ConfigurationField AgentAdapterTypes { get; set; }
+    protected bool IsEditing => Model != null && Model.InvestigationInfo.InvestigationId != Guid.Empty;
+
+    protected Dictionary<string, FEAR.Domain.Agents.AgentDefinition> AgentDefinitions => Model.Configuration.AgentConfiguration.Agents;
+
+    protected override void OnInitialized()
+    {
+        if (Model.Configuration.AgentConfiguration.Agents == null)
+        {
+            Model.Configuration.AgentConfiguration.Agents = new Dictionary<string, FEAR.Domain.Agents.AgentDefinition>();
+        }
+
+        AgentAdapterTypes = Wizard.GetFieldOptions("AgentAdapterTypes");
+        base.OnInitialized();
+    }
+
+    protected async Task AddAgent()
+    {
+        string newAgentName = $"Agent{AgentDefinitions.Count + 1}";
+        await AddAgent(newAgentName);
+    }
+
+    protected async Task AddAgent(string newAgentName, string newAgentDescription = "", string agentInput = "")
+    {
+        AgentDefinitions[newAgentName] = new FEAR.Domain.Agents.AgentDefinition { AgentName = newAgentName, Description = newAgentDescription, InputChain = new string[] { agentInput } };
+
+        var result = await EditAgent(newAgentName);
+        if (result != null && result.Canceled)
+        {
+            // If the dialog was canceled, remove the placeholder agent entry
+            AgentDefinitions.Remove(newAgentName);
+        }
+    }
+
+    protected async Task<DialogResult?> EditAgent(string newAgentName)
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var parameters = new DialogParameters
+        {
+            { "AgentAdapterTypes", AgentAdapterTypes },
+            { "ExistingAgents", AgentDefinitions.Keys.ToList() },
+            { "Model", AgentDefinitions[newAgentName] }
+        };
+
+        var dialog = DialogService.Show<AgentEditorDialog>("Agent Editor", parameters, options);
+        var result = await dialog.Result;
+
+        if (result != null && !result.Canceled)
+        {
+            // Update the agent entry with the values from the dialog
+            var updatedAgentDef = (AgentDefinition)result.Data;
+            UpdateAgentDef(updatedAgentDef, newAgentName);
+            StateHasChanged();
+        }
+
+        return result;
+    }
+
+    protected void RemoveAgent(string agentName)
+    {
+        // Confirm before removing
+        DialogService.ShowMessageBox("Confirm Remove", $"Are you sure you want to remove the agent '{agentName}'?", yesText: "Yes", noText: "No")
+            .ContinueWith(task =>
+            {
+                if (task.Result == true)
+                {
+                    AgentDefinitions.Remove(agentName);
+                    InvokeAsync(StateHasChanged);
+                }
+            });
+    }
+
+    private void UpdateAgentDef(AgentDefinition updatedModel, string originalAgentName)
+    {
+        // Update the agent entry and options based on the values from the dialog
+        if (updatedModel.AgentName != originalAgentName)
+        {
+            // If the agent name was changed, we need to update the key in the dictionaries
+            AgentDefinitions.Remove(originalAgentName);
+
+            AgentDefinitions.Add(updatedModel.AgentName, updatedModel);
+        }
+        else
+        {
+            AgentDefinitions[updatedModel.AgentName] = updatedModel;
+        }
+    }
+
+    protected override void UpdateValidationState(bool isValid)
+    {
+        isValid &= !(Model.Configuration.AgentConfiguration?.Enabled ?? false) || (!string.IsNullOrEmpty(Model.Configuration.AgentConfiguration.DefaultAgent));
+
+        base.UpdateValidationState(isValid);
+    }
+}

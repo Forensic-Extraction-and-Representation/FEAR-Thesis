@@ -1,0 +1,9 @@
+{
+  "Keys": [
+    {
+      "KeyName": "",
+      "KeyIdentifiers": [ "PrimaryKey", "SecondaryKey" ],
+      "EncryptedKey": ""
+    }
+  ]
+}

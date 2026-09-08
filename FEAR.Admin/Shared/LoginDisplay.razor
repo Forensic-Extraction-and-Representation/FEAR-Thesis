@@ -1,0 +1,50 @@
+﻿﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+
+<MudMenu Dense
+         Variant="Variant.Text"
+         Size="Size.Medium"
+         Color="Color.Inherit"
+         Icon="@Icons.Material.TwoTone.MoreVert">
+
+    <AuthorizeView>
+        <Authorized>
+            <MudMenuItem 
+            Disabled="true">
+                Signed in as @context.User.Identity!.Name
+            </MudMenuItem>
+            
+            <MudMenu StartIcon="@Icons.Material.TwoTone.Settings"
+                     IconColor="Color.Primary"
+                     Label="Settings">
+                <MudMenuItem Icon="@Icons.Material.TwoTone.DarkMode"
+                             IconColor="Color.Secondary"
+                             Label="Dark Theme" />
+            </MudMenu>
+
+            <MudDivider />
+            <MudMenuItem Href="/"
+                         ForceLoad @onclick="BeginSignOut"
+                         Icon="@Icons.Material.TwoTone.Logout"
+                         IconColor="Color.Primary"
+                         Label="Sign Out" />
+        </Authorized>
+        <NotAuthorized>
+            <MudMenuItem Href="authentication/login"
+                         ForceLoad
+                         Icon="@Icons.Material.TwoTone.Login"
+                         IconColor="Color.Primary"
+                         Label="Sign In" />
+        </NotAuthorized>
+    </AuthorizeView>
+
+</MudMenu>
+
+@code{
+    private void BeginSignOut(MouseEventArgs args)
+    {
+        Navigation.NavigateTo("authentication/logout");
+    }
+}

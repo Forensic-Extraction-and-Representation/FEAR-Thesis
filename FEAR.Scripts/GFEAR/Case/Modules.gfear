@@ -1,0 +1,33 @@
+define codifier("ProcessModules", "GraphCodify/CaseOntology/ProcessModules");
+ontology("https://ontology.caseontology.org/case", "case");
+ontology("https://ontology.unifiedcyberontology.org/uco/", "uco");
+ontology("http://www.w3.org/ns/prov#", "prov");
+
+include rdf, rdfs, xsd, owl, xml;
+prefix("sh" , "http://www.w3.org/ns/shacl#");
+prefix("uco-core", "uco:core");
+prefix("uco-observable", "uco:observable");
+prefix("uco-action", "uco:action");
+
+accepts(PID, Modules);
+result prefetch as uco-observable:Process with {
+    create collection loadedModules as rdf:Bag of uco-observable:File;
+    foreach mod in Modules {  
+        create entity moduleEntry as uco-observable:File with {
+            create entity fileFacet as uco-observable:FileFacet with {
+                create property uco-observable:filePath as xsd:string with mod;  
+            } identified by required uco-observable:filePath;
+
+            create property uco-core:hasFacet with entity fileFacet;
+		} identified by required entity uco-core:hasFacet fileFacet;
+
+        append entity moduleEntry to loadedModules;
+    }
+
+    create property prov:wasDerivedFrom with collection loadedModules;
+    
+    create entity processFacet as uco-observable:ProcessFacet with {
+		create property uco-observable:pid as xsd:integer with PID;
+	} identified by required uco-observable:pid;
+    create property uco-core:hasFacet with entity processFacet;
+} identified by required entity uco-core:hasFacet processFacet;

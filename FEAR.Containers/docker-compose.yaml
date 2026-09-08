@@ -1,0 +1,60 @@
+services:
+    web:
+        image: fear-app:latest
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            - ASPNETCORE_SECRETS_DIRECTORY=/run/secrets
+        secrets:
+            - db_password
+            - ConnectionStrings__HostedSystemConnection
+            - ConnectionStrings__InvestigationConnection
+            - ConnectionStrings__IdentityConnection
+            - ConnectionStrings__OpenIdConnection
+            - Jwt__Key
+            - Jwt__EncKey
+            - ChatInference__SigningKey
+            - SystemTld
+        ports:
+            - "443:443"
+
+    jena:
+        image: stain/jena-fuseki
+        env_file:
+            - ./deploy/jena.env
+        ports:
+            - "3030:3030"
+
+    postgres:
+        image: fear-dbs:latest
+        secrets:
+            - db_password
+        ports: 
+            - "5432:5432"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres && test -f /.database-ready"]
+            interval: 10s
+            timeout: 10s
+            retries: 20
+            start_period: 10s
+
+secrets:
+    db_password:
+        file: ./secrets/db_password
+    ConnectionStrings__HostedSystemConnection:
+        file: ./secrets/ConnectionStrings__HostedSystemConnection
+    ConnectionStrings__InvestigationConnection:
+        file: ./secrets/ConnectionStrings__InvestigationConnection
+    ConnectionStrings__IdentityConnection:
+        file: ./secrets/ConnectionStrings__IdentityConnection
+    ConnectionStrings__OpenIdConnection:
+        file: ./secrets/ConnectionStrings__OpenIdConnection
+    Jwt__Key:
+        file: ./secrets/Jwt__Key
+    Jwt__EncKey:
+        file: ./secrets/Jwt__EncKey
+    ChatInference__SigningKey:
+        file: ./secrets/ChatInference__SigningKey
+    SystemTld:
+        file: ./secrets/SystemTld

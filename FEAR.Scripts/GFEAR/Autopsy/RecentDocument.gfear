@@ -1,0 +1,21 @@
+﻿define codifier("TSK_RECENT_OBJ", "DFIO/Autopsy/RecentDocument");
+ontology("https://github.com/owlontology/digitalforensics/blob/main/autopsy.owl#", "aut");
+ontology("http://www.w3.org/2001/XMLSchema#", "xsd");
+
+include rdf, rdfs, xsd, owl, xml;
+accepts(Category, HostSha1, SourceFile, SourceMime, SourceFileMd5, Path, AccessedDateTime);
+
+result RecentDocument as aut:RecentDocument with {
+	create property aut:category as xsd:string with Category;
+	create property aut:sourceFile as xsd:string with SourceFile;
+	create property aut:sourceMime as xsd:string with SourceMime;
+	create property aut:sourceFileMd5 as xsd:hexBinary with SourceFileMd5;
+	create property aut:accessedDateTime as xsd:dateTime with AccessedDateTime;
+	create property aut:path as xsd:string with Path;
+	
+	create entity suspectHost as aut:Host with {
+		create property aut:hostSha1 as xsd:string with HostSha1;
+	} identified by required aut:hostSha1;
+	
+	create property aut:sourceHost with entity suspectHost;
+} identified by required aut:path, required entity aut:sourceHost suspectHost;

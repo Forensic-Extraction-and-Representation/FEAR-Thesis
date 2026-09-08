@@ -1,0 +1,81 @@
+﻿@page "/Investigations/"
+@inherits FEAR.Blazor.Shared.Components.DataGridComponentBase<FEAR.Domain.Model.InvestigationStore.InvestigationInfo>
+@using FEAR.Admin.Services.Management
+@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using FEAR.Host.Domain.Api.Investigation
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudPaper>
+            <MudText Typo="Typo.h6">Investigations</MudText>
+            <MudSpacer />
+            @if (Items != null)
+            {
+                <MudDataGrid T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" MultiSelection=false Items="Items" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilters"
+                             Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+                    <ToolBarContent>
+                        <MudTooltip Text="Create Investigation">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add" OnClick="CreateCaseWizard">Add</MudButton>
+                        </MudTooltip>
+                        <MudTooltip Text="Import Case from file">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="ImportInvestigation" Class="ml-2">Import</MudButton>
+                        </MudTooltip>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="_searchString" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+                    </ToolBarContent>
+                    <Columns>
+                        <SelectColumn T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" />
+                        <PropertyColumn Property="x => x.CaseNumber" Title="Case Number" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.Name" Title="Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseType" Title="Case Type" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseStatus" Title="Case Status" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.CaseDate" Title="Case Date" Sortable="true" Filterable="true" />
+                       
+                        <TemplateColumn Title="Actions" T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" HeaderStyle="width: 150px;">
+                            <CellTemplate>
+                                <MudTooltip Text="Settings">
+                                    <MudMenu Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" Size="Size.Small" AnchorOrigin="Origin.BottomLeft">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Settings" OnClick="() => EditInvestigation(context.Item)">Edit Settings</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.FolderSpecial" OnClick="() => EditInvestigationQueries(context.Item)">Edit Queries</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Person" OnClick="() => EditInvestigationUsers(context.Item)">Edit Users</MudMenuItem>
+                                        <MudDivider />
+                                        <MudMenuItem Icon="@Icons.Material.Filled.FileUpload" OnClick="() => ExportInvestigation(context.Item)">Export Case</MudMenuItem>
+                                        <MudDivider />
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Delete" IconColor="Color.Error" OnClick="() => DeleteInvestigation(context.Item)">Delete</MudMenuItem>
+                                    </MudMenu>
+                                </MudTooltip>
+                                <MudTooltip Text="Runtime">
+                                    <MudMenu Icon="@Icons.Material.Filled.PlayCircle" Color="Color.Secondary" Size="Size.Small" AnchorOrigin="Origin.BottomLeft">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.PlayArrow" IconColor="Color.Success" OnClick="() => StartInvestigationGraphService(context.Item)">Start</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Stop" IconColor="Color.Error" OnClick="() => StopInvestigationGraphService(context.Item)">Stop</MudMenuItem>
+                                        <MudMenuItem Icon="@Icons.Material.Filled.RestartAlt" IconColor="Color.Warning" OnClick="() => RestartInvestigationGraphService(context.Item)">Restart</MudMenuItem>
+                                        <MudDivider />
+                                        <MudMenuItem Icon="@Icons.Material.Filled.BugReport" OnClick="() => ViewTelemetryLogs(context.Item)">Logs</MudMenuItem>
+                                    </MudMenu>
+                                </MudTooltip>
+                                <MudTooltip Text="Info">
+                                    <MudMenu Icon="@Icons.Material.Filled.Info" Color="Color.Tertiary" Size="Size.Small" AnchorOrigin="Origin.BottomLeft">
+                                        <MudMenuItem Icon="@Icons.Material.Filled.Info" OnClick="() => ViewInvestigationInfo(context.Item)">View Info</MudMenuItem>
+                                    </MudMenu>
+                                </MudTooltip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="FEAR.Domain.Model.InvestigationStore.InvestigationInfo" />
+                    </PagerContent>
+
+                </MudDataGrid>
+            }
+            else
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                        <MudText>Loading investigations...</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>

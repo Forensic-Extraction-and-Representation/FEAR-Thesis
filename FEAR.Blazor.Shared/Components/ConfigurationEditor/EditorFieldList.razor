@@ -1,0 +1,37 @@
+﻿@using FEAR.Blazor.Shared.Components.ConfigurationEditor.Model
+@using MudBlazor
+
+@foreach (var field in Fields)
+{
+    if(field.HasVisibleCondition && !field.VisibleCondition.IsFieldVisible(ValueStore))
+    {
+        continue;
+    }
+    @if (field.IsDictionary)
+    {
+        <EditorDictionary Field="field" PropertyPath="@PropertyPathFor(field)" ValueStore="ValueStore" />
+    }
+    else
+    {
+        @if (field.Type != FieldTypeEnum.Object)
+        {
+            <EditorField ValueStore="ValueStore" PropertyPath="@PropertyPathFor(field)" Field="@field" />
+        }
+        else
+        {
+            <EditorObject ValueStore="ValueStore" PropertyPath="@PropertyPathFor(field)" Field="@field" />
+        }
+    }
+
+}
+
+@code {
+    [Parameter] public EditorValueStore ValueStore { get; set; }
+    [Parameter] public IEnumerable<FormField> Fields { get; set; }
+    [Parameter] public string PropertyPath { get; set; } = "";
+
+    private string PropertyPathFor(FormField field)
+    {
+        return string.IsNullOrWhiteSpace(PropertyPath) ? $".{field.PropertyName}" : $"{PropertyPath}.{field.PropertyName}";
+    }
+}

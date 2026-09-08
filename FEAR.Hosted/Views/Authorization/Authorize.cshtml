@@ -1,0 +1,30 @@
+﻿@model FEAR.Hosted.Pages.Authorization.AuthorizeModel
+@using Microsoft.Extensions.Primitives
+
+<div class="container py-5" style="max-width: 720px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <h1 class="h3 mb-3 text-center">Authorization</h1>
+            <p class="lead text-center mb-4">
+                Grant <strong>@Model.ApplicationName</strong> access to your data?<br />
+                <small class="text-muted">Scopes requested: @Model.Scope</small>
+            </p>
+
+            <form asp-controller="Authorization" asp-action="Authorize" method="post" class="d-grid gap-2">
+                @Html.AntiForgeryToken()
+
+                @foreach (var parameter in Context.Request.HasFormContentType
+                    ? (IEnumerable<KeyValuePair<string, StringValues>>)Context.Request.Form
+                    : Context.Request.Query)
+                {
+                    <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+                }
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <input class="btn btn-success px-4" name="submit.Accept" type="submit" value="Yes, allow" />
+                    <input class="btn btn-outline-danger px-4" name="submit.Deny" type="submit" value="No, deny" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,280 @@
+﻿@using Microsoft.AspNetCore.Components
+@using MudBlazor
+@using System.Reflection
+@using System.Linq
+@using FEAR.Blazor.Shared.Components.Wizards
+
+@typeparam TModel
+@inherits WizardContext
+
+<MudDialog Style="height:75vh">
+    <DialogContent>
+        <MudContainer Class="px-2" Style="height: 100%; display: flex;">
+            <!-- Mobile Step Selection -->
+            <div class="d-md-none pa-4 pb-2">
+                <MudSelect T="int" Value="_currentStepIndex" ValueChanged="@GoToStep" Label="Current Step" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    @for (int i = 0; i < Steps.Count; i++)
+                    {
+                        var index = i;
+                        var stepType = Steps[i];
+                        var title = GetStepTitle(stepType);
+                        var isNavigable = IsStepNavigable(index);
+
+                        <MudSelectItem Value="@index" Disabled="@(!isNavigable)">@title</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <div class="d-flex flex-grow-1" style="min-height:0;">
+                <!-- Steps Sidebar (Desktop) -->
+                <div class="d-none d-md-flex flex-column border-end pa-4 my-1" style="min-width: 250px; background-color: var(--mud-palette-background-grey);">
+                    <MudList T="int" SelectedValue="_currentStepIndex" Color="Color.Primary">
+                        @for (int i = 0; i < Steps.Count; i++)
+                        {
+                            var index = i; // Local copy
+                            var stepType = Steps[i];
+                            var title = GetStepTitle(stepType);
+                            var icon = GetStepIcon(stepType);
+                            var stepRequiresValidation = _stepInstances.TryGetValue(stepType, out var step) && step.RequiredValidation;
+                            var isStepValid = _stepValidity.TryGetValue(stepType, out var valid) && valid;
+
+                            <MudListItem Value="@index" OnClick="@(() => GoToStep(index))" Disabled="@(!IsStepNavigable(index))">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@icon"
+                                             Color="@Color.Default"
+                                             Size="Size.Small"
+                                             Class="mr-2" />
+                                    <MudText Typo="Typo.body2">@title</MudText>
+                                    <MudSpacer />
+                                    @if (stepRequiresValidation)
+                                    {
+                                        <MudIcon Icon="@(isStepValid ? Icons.Material.Outlined.CheckCircle : Icons.Material.Outlined.RemoveCircle)"
+                                                 Color="@(isStepValid ? Color.Success : (index == _currentStepIndex ? Color.Warning : Color.Default))"
+                                                 Size="Size.Small"
+                                                 Class="mr-2" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Outlined.Info"
+                                                 Color="Color.Default"
+                                                 Size="Size.Small"
+                                                 Class="mr-2" />
+                                    }
+                                </div>
+                            </MudListItem>
+                        }
+                    </MudList>
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-grow-1 d-flex flex-column px-2 py-1">
+                    <div class="flex-grow-1 overflow-auto px-3">
+                        <CascadingValue Value="this">
+                            @foreach (var stepType in Steps)
+                            {
+                                var isVisible = Steps.IndexOf(stepType) == _currentStepIndex;
+                                <div style="@(isVisible ? "height: 100%;" : "display: none;")">
+                                    <DynamicComponent Type="@stepType" />
+                                </div>
+                            }
+                        </CascadingValue>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-end gap-2 mt-2 pt-3 border-top">
+                        <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
+                        <MudButton OnClick="PreviousStep" Disabled="@(_currentStepIndex == 0)" Variant="Variant.Outlined">Back</MudButton>
+
+                        @if (_currentStepIndex < Steps.Count - 1)
+                        {
+                            <MudButton OnClick="NextStep" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!IsCurrentStepValid)">Next</MudButton>
+                        }
+                        else
+                        {
+                            <MudButton OnClick="Finish" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!IsCurrentStepValid)">Finish</MudButton>
+                        }
+                    </div>
+                </div>
+            </div>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public List<Type> Steps { get; set; } = new();
+
+    [Parameter] public EventCallback OnFinished { get; set; }
+
+    [Parameter] public TModel? Model { get; set; }
+
+    public override object? ModelObject => Model;
+
+    public virtual bool IsEditing => Model != null;
+
+    private int _currentStepIndex = 0;
+    private int _maxStepIndexReached = 0;
+    private Dictionary<Type, WizardStep> _stepInstances = new();
+    private Dictionary<Type, bool> _stepValidity = new();
+
+    internal override void AddStep(WizardStep step)
+    {
+        _stepInstances[step.GetType()] = step;
+        StateChange();
+    }
+
+    private async Task CheckValidity()
+    {
+        foreach (var kvp in _stepInstances)
+        {
+            if (kvp.Value.RequiredValidation)
+                _stepValidity[kvp.Key] = await kvp.Value.IsValidAsync();
+            else
+                _stepValidity[kvp.Key] = true;
+        }
+
+        StateHasChanged();
+    }
+
+    private bool IsCurrentStepValid
+    {
+        get
+        {
+            if (Steps == null || Steps.Count == 0) return false;
+            
+            // If the current step index is out of bounds, it's invalid
+            if (_currentStepIndex < 0 || _currentStepIndex >= Steps.Count) return false;
+
+            if (!IsEditing)
+            {
+                // If we're on a step that hasn't been reached yet, consider it invalid until we validate it
+                if (_currentStepIndex > _maxStepIndexReached) return false;
+            }
+
+            var type = Steps[_currentStepIndex];
+            // If we have validity info, use it. Default to false if not present (step not yet loaded/validated).
+            return _stepValidity.TryGetValue(type, out var valid) && valid;
+        }
+    }
+
+    private bool IsStepNavigable(int index)
+    {
+        for (int i = 0; i < index; i++)
+        {
+            var type = Steps[i];
+            if (!_stepValidity.TryGetValue(type, out var valid) || !valid)
+            {
+                return false;
+            }
+        }
+
+        return IsEditing || index <= _maxStepIndexReached;
+    }
+
+    private string GetStepTitle(Type type)
+    {
+        var attr = type.GetCustomAttribute<WizardStepAttribute>();
+        return attr?.Title ?? type.Name;
+    }
+
+    private string? GetStepIcon(Type type)
+    {
+        var attr = type.GetCustomAttribute<WizardStepAttribute>();
+        return attr?.Icon;
+    }
+
+    private void NotifyWizardStepChanging()
+    {
+        if (_currentStepIndex < 0 || _currentStepIndex >= Steps.Count) return;
+        else
+        {
+            var type = Steps[_currentStepIndex];
+            if (_stepInstances.TryGetValue(type, out var step))
+            {
+                step.OnWizardStepChanging();
+            }
+        }
+    }
+
+    private async Task NextStep()
+    {
+        if (await ValidateCurrentStepAsync())
+        {
+            if (_currentStepIndex < Steps.Count - 1)
+            {
+                NotifyWizardStepChanging();
+                _currentStepIndex++;
+
+                if (_currentStepIndex > _maxStepIndexReached)
+                {
+                    _maxStepIndexReached = _currentStepIndex;
+                }
+            }
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (_currentStepIndex > 0)
+        {
+            NotifyWizardStepChanging();
+            _currentStepIndex--;
+        }
+    }
+
+    private async Task GoToStep(int index)
+    {
+        if (index == _currentStepIndex) return;
+
+        if (IsStepNavigable(index))
+        {
+            NotifyWizardStepChanging();
+            _currentStepIndex = index;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    public override void StateChange() => InvokeAsync(CheckValidity);
+
+    protected virtual async Task OnCommitAsync()
+    {
+        await Task.CompletedTask;
+    }
+
+    protected virtual async Task Finish()
+    {
+        if (await ValidateCurrentStepAsync())
+        {
+            await OnCommitAsync();
+            MudDialog.Close(DialogResult.Ok(Model));
+            await OnFinished.InvokeAsync();
+        }
+    }
+
+    protected virtual async Task<bool> ValidateCurrentStepAsync()
+    {
+        if (_currentStepIndex < 0 || _currentStepIndex >= Steps.Count) return true;
+        var type = Steps[_currentStepIndex];
+
+        if (_stepInstances.TryGetValue(type, out var step))
+        {
+            var isValid = true;
+            if (step.RequiredValidation)
+            {
+                isValid = await step.IsValidAsync();
+            }
+
+            _stepValidity[type] = isValid;
+            return isValid;
+        }
+
+        return true;
+    }
+
+    protected void SetStep(int index)
+    {
+        _currentStepIndex = index;
+    }
+}
